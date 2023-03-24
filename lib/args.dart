@@ -53,15 +53,15 @@ class Args {
   bool get isDummy => device.name == 'dummy';
 
   static final _argParser = ArgParser()
-    ..addFlag('status', help: 'print the Renogy Rover status as JSON to stdout and quit')
-    ..addFlag('utc', help: 'CSV: dump date in UTC instead of local, handy for Grafana')
+    ..addFlag('status', help: 'print the Renogy Rover status as JSON to stdout and quit', negatable: false)
+    ..addFlag('utc', help: 'CSV: dump date in UTC instead of local, handy for Grafana', negatable: false)
     ..addOption('csv', help: 'appends status to a CSV file, disables stdout status logging')
     ..addOption('sqlite', help: 'appends status to a sqlite database, disables stdout status logging')
     ..addOption('postgres', help: 'appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. postgresql://user:pass@localhost:5432/postgres')
-    ..addOption('statusfile', help: 'overwrites status to file other than the default "status.json"', defaultsTo: 'status.json')
-    ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data, defaults to 10', defaultsTo: '10')
-    ..addOption('prunelog', help: 'prunes log entries older than x days, defaults to 365', defaultsTo: '365')
-    ..addFlag('verbose', help: 'Print verbosely what I\'m doing');
+    ..addOption('statusfile', help: 'overwrites status to given file', defaultsTo: 'status.json')
+    ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data', defaultsTo: '10')
+    ..addOption('prunelog', help: 'prunes log entries older than x days', defaultsTo: '365')
+    ..addFlag('verbose', help: 'Print verbosely what I\'m doing', negatable: false);
 
   /// Prints help and stops the program.
   static Never _help() {
