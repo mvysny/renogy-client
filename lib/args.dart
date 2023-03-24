@@ -100,8 +100,9 @@ class Args {
       _configureLogger(a.verbose);
       _log.fine(a);
       return a;
-    } catch (e) {
+    } on ArgParserException catch(e, s) {
       print(e);
+      print(s);
       _help();
     }
   }
@@ -115,13 +116,7 @@ class Args {
     if (verbose) Logger.root.level = Level.ALL;
   }
 
-  static File? _toFile(String? path) {
-    if (path == null) {
-      return null;
-    } else {
-      return File(path);
-    }
-  }
+  static File? _toFile(String? path) => path == null ? null : File(path);
 
   static final Logger _log = Logger('Args');
 
