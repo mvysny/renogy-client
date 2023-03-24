@@ -1,0 +1,15 @@
+name: Gradle
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: dart-lang/setup-dart@v1
+
+    - run: dart pub get
+    - run: dart format --output=none --set-exit-if-changed .
+    - run: dart analyze
+    - run: dart test
