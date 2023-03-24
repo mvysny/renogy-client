@@ -277,9 +277,10 @@ Table of possible faults:
 
 Run this on your Raspberry PI:
 
-1. [Install Dart](https://dart.dev/get-dart), the "Linux" tab, then use the apt-get method.
-2. Build with `dart compile exe bin/renogy_client.dart`
-3. Find the binary at `bin/renogy_client.exe`
+1. [Install Dart](https://dart.dev/get-dart/archive), the ARMv8 (ARM64). Unfortunately it's not possible to use the apt-get method on ARMs.
+2. Resolve dependencies with `dart pub get`
+3. Build with `dart compile exe bin/renogy_client.dart`
+4. Find the binary at `bin/renogy_client.exe`
 
 # More documentation
 
