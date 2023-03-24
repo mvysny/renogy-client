@@ -1,5 +1,5 @@
-import 'package:renogy_client/renogy_client.dart' as renogy_client;
+import 'package:renogy_client/args.dart';
 
 void main(List<String> arguments) {
-  print('Hello world: ${renogy_client.calculate()}!');
+  print(Args.parse(arguments));
 }
