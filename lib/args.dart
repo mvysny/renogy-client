@@ -118,7 +118,7 @@ class Args {
 
   static File? _toFile(String? path) => path == null ? null : File(path);
 
-  static final Logger _log = Logger('Args');
+  static final Logger _log = Logger((Args).toString());
 
   @override
   String toString() {
