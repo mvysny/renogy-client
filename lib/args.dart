@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'package:renogy_client/utils.dart';
 
 class Args {
@@ -76,28 +78,41 @@ class Args {
   /// Parses the command-line args.
   static Args parse(List<String> args) {
     try {
-      ArgResults a = _argParser.parse(args);
-      if (a.rest.length != 1) throw ArgParserException("Please supply one serial device");
-      var pollInterval = int.tryParse(a['pollinterval']);
+      final ArgResults ar = _argParser.parse(args);
+      if (ar.rest.length != 1) throw ArgParserException("Please supply one serial device");
+      final pollInterval = int.tryParse(ar['pollinterval']);
       if (pollInterval == null) throw ArgParserException("pollinterval: not a number");
-      var pruneLog = int.tryParse(a['prunelog']);
+      final pruneLog = int.tryParse(ar['prunelog']);
       if (pruneLog == null) throw ArgParserException("prunelog: not a number");
-      return Args(
-          File(a.rest.first),
-          a['status'] as bool,
-          a['utc'] as bool,
-          _toFile(a['csv']),
-          _toFile(a['sqlite']),
-          a['postgres'],
-          _toFile(a['statusfile']),
+      final Args a = Args(
+          File(ar.rest.first),
+          ar['status'] as bool,
+          ar['utc'] as bool,
+          _toFile(ar['csv']),
+          _toFile(ar['sqlite']),
+          ar['postgres'],
+          _toFile(ar['statusfile']),
           pollInterval,
           pruneLog,
-          a['verbose'] as bool
+          ar['verbose'] as bool
       );
+
+      _configureLogger(a.verbose);
+      _log.fine(a);
+      return a;
     } catch (e) {
       print(e);
       _help();
     }
+  }
+
+  static void _configureLogger(bool verbose) {
+    Logger.root.level = Level.INFO;
+    final DateFormat timestampFormatter = DateFormat('yyyy-MM-dd HH-mm-ss');
+    Logger.root.onRecord.listen((record) {
+      print('${record.level.name}: ${timestampFormatter.format(record.time)}: ${record.message}');
+    });
+    if (verbose) Logger.root.level = Level.ALL;
   }
 
   static File? _toFile(String? path) {
@@ -107,6 +122,8 @@ class Args {
       return File(path);
     }
   }
+
+  static final Logger _log = Logger('Args');
 
   @override
   String toString() {
