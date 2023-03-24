@@ -51,7 +51,7 @@ read below on how to compile the project from sources.
 Example which will log dummy data periodically into the sqlite database:
 
 ```bash
-$./solar-controller-client.kexe --sqlite log.db dummy
+$ ./renogy-client.exe --sqlite log.db dummy
 ```
 
 To see the data, simply run
@@ -62,13 +62,13 @@ $ sqlite3 log.db "select * from log"
 To connect to an actual device, pass in the device file name of tty connected to the Renogy, e.g.
 
 ```bash
-$ solar-controller-client.kexe /dev/ttyUSB0 --status
+$ ./renogy-client.exe /dev/ttyUSB0 --status
 ```
 
 That will cause the app will only print status and quit. To continuously poll the device for data, run
 
 ```bash
-$ solar-controller-client.kexe --sqlite log.db /dev/ttyUSB0
+$ ./renogy-client.exe --sqlite log.db /dev/ttyUSB0
 ```
 
 The program will overwrite `status.json` file with the new data polled from the device;
@@ -154,7 +154,7 @@ it's far better to output the data to the sqlite database. This requires the `sq
 program installed, simply install it via `sudo apt install sqlite3`.
 
 ```bash
-$ solar-controller-client.kexe --sqlite log.db /dev/ttyUSB0
+$ ./renogy-client.exe --sqlite log.db /dev/ttyUSB0
 ```
 
 The database looks like the following:
@@ -234,7 +234,7 @@ postgres=# grant all privileges on database mydb to myuser;
 Then:
 
 ```bash
-$ solar-controller-client.kexe --postgres postgresql://myuser:mypass@localhost:5432/mydb /dev/ttyUSB0
+$ ./renogy-client.exe --postgres postgresql://myuser:mypass@localhost:5432/mydb /dev/ttyUSB0
 ```
 
 The database columns are identical to the sqlite columns.
@@ -248,7 +248,7 @@ Use `dummy` instead
 of the device name. This will create a dummy renogy device and poll data off it:
 
 ```bash
-$ solar-controller-client.kexe dummy
+$ ./renogy-client.exe dummy
 ```
 
 ## Faults
