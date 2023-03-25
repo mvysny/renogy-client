@@ -74,22 +74,22 @@ class DummyRenogyClient implements RenogyClient {
   @override
   RenogyData getAllData({SystemInfo? cachedSystemInfo}) {
     final systemInfo = cachedSystemInfo ?? getSystemInfo();
-    final now = DateTime
-        .now(); // always local date since we calculate the generation percentage off it.
+    // always local date since we calculate the generation percentage off it.
+    final now = DateTime.now();
 
-// generate dummy power data flowing from the solar panels; calculate the rest of the values
+    // generate dummy power data flowing from the solar panels; calculate the rest of the values
     final solarPanelVoltage = random.nextDoubleRange(
         maxSolarPanelVoltage * 0.66, maxSolarPanelVoltage);
     var solarPanelCurrent = random.nextDoubleRange(
         maxSolarPanelAmperage / 2, maxSolarPanelAmperage);
-// adjust the generated power according to the hour-of-day, so that we won't generate 100% power at midnight :-D
+    // adjust the generated power according to the hour-of-day, so that we won't generate 100% power at midnight :-D
     solarPanelCurrent *= _solarPanelGenerationPercentagePerHour[now.hour];
-// this is the most important value: this is the power (in Watts) the solar array is producing at this moment.
+    // this is the most important value: this is the power (in Watts) the solar array is producing at this moment.
     final solarPanelPowerW = solarPanelVoltage * solarPanelCurrent;
 
     final batteryVoltage = random.nextDoubleRange(
         systemInfo.maxVoltage.toDouble(), systemInfo.maxVoltage * 1.19);
-// how much current flows into the battery at the moment.
+    // how much current flows into the battery at the moment.
     final currentToBattery = solarPanelPowerW / batteryVoltage;
 
     final dummyPowerStatus = PowerStatus()
