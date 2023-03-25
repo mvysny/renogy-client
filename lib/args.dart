@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
-import 'package:renogy_client/data_logger.dart';
-import 'package:renogy_client/utils.dart';
+import 'package:renogy_client/utils/data_logger.dart';
+import 'package:renogy_client/utils/utils.dart';
 
 class Args {
   /// The file name of the serial device to communicate with, e.g. `/dev/ttyUSB0` . Pass in `dummy` for a dummy Renogy client

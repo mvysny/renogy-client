@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
-import 'package:renogy_client/modbus_crc.dart';
+import 'package:renogy_client/utils/modbus_crc.dart';
 import 'package:test/test.dart';
 
 void main() {
