@@ -388,5 +388,6 @@ abstract class RenogyClient {
   /// Throws [RenogyException] if the data retrieval fails
   RenogyData getAllData({SystemInfo? cachedSystemInfo});
 
+  /// Closes the client. The client must not be used afterwards.
   void close();
 }

@@ -50,10 +50,12 @@ extension DateTimeExtensions on DateTime {
 }
 
 extension RandomRanges on Random {
+  /// Returns a random int value, in the range of min (including) .. max (excluding).
   int nextIntRange(int min, int max) {
     if (min > max) throw ArgumentError.value(max, "max", "must be higher than $min");
     return nextInt(max - min) + min;
   }
+  /// Returns a random int value, in the range of min (including) .. max (excluding).
   double nextDoubleRange(double min, double max) {
     if (min > max) throw ArgumentError.value(max, "max", "must be higher than $min");
     return nextDouble() * (max - min) + min;

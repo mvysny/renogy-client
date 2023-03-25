@@ -98,7 +98,8 @@ final dummyRenogyData = RenogyData()
 return dummyRenogyData;
 }
 
-override fun close() {}
+@override
+void close() {}
 
 /**
  * Updates statistics. Now we can calculate [DailyStats] and [HistoricalData] correctly.
