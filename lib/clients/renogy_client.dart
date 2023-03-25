@@ -126,8 +126,7 @@ class RenogyStatus {
   /// current faults, empty if none.
   Set<ControllerFaults> faults = {};
 
-  Map toJson() =>
-      {
+  Map<String, Object?> toJson() => {
         "streetLightOn": streetLightOn,
         "streetLightBrightness": streetLightBrightness,
         "chargingState": chargingState?.name,
@@ -161,8 +160,7 @@ class HistoricalData {
   /// cumulative power consumption in Wh. mavi: probably only applicable to inverters, 0 for controller.
   int cumulativePowerConsumptionWH = 0;
 
-  Map toJson() =>
-      {
+  Map<String, Object?> toJson() => {
         "daysUp": daysUp,
         "batteryOverDischargeCount": batteryOverDischargeCount,
         "batteryFullChargeCount": batteryFullChargeCount,
@@ -180,40 +178,101 @@ class HistoricalData {
 class DailyStats {
   /// Battery's min. voltage of the current day, V. Precision: 1 decimal points.
   double batteryMinVoltage = 0;
+
   /// Battery's max. voltage of the current day, V. Precision: 1 decimal points.
   double batteryMaxVoltage = 0;
+
   /// Max. charging current of the current day, A. Probably applies to controller only. Precision: 2 decimal points.
   double maxChargingCurrent = 0;
+
   /// Max. discharging current of the current day, A. mavi: probably only applies to inverter; will be 0 for controller. Precision: 2 decimal points.
   double maxDischargingCurrent = 0;
+
   /// Max. charging power of the current day, W. mavi: probably only applies to controller; will be 0 for inverter.
   int maxChargingPower = 0;
+
   /// Max. discharging power of the current day, W. mavi: probably only applies to inverter; will be 0 for controller.
   int maxDischargingPower = 0;
+
   /// Charging amp-hrs of the current day, Ah. mavi: probably only applies to controller; will be 0 for inverter.
   int chargingAh = 0;
+
   /// Discharging amp-hrs of the current day, Ah. mavi: probably only applies to inverter; will be 0 for controller.
   int dischargingAh = 0;
+
   /// Power generation of the current day, Wh. Probably only applies to controller.
   int powerGenerationWh = 0;
+
   /// Power consumption of the current day, Wh. Probably only applies to inverter.
   int powerConsumptionWh = 0;
 
-  Map toJson() => {
-    "batteryMinVoltage": batteryMinVoltage,
-    "batteryMaxVoltage": batteryMaxVoltage,
-    "maxChargingCurrent": maxChargingCurrent,
-    "maxDischargingCurrent": maxDischargingCurrent,
-    "maxChargingPower": maxChargingPower,
-    "maxDischargingPower": maxDischargingPower,
-    "chargingAh": chargingAh,
-    "dischargingAh": dischargingAh,
-    "powerGenerationWh": powerGenerationWh,
-    "powerConsumptionWh": powerConsumptionWh
-  };
+  Map<String, Object?> toJson() => {
+        "batteryMinVoltage": batteryMinVoltage,
+        "batteryMaxVoltage": batteryMaxVoltage,
+        "maxChargingCurrent": maxChargingCurrent,
+        "maxDischargingCurrent": maxDischargingCurrent,
+        "maxChargingPower": maxChargingPower,
+        "maxDischargingPower": maxDischargingPower,
+        "chargingAh": chargingAh,
+        "dischargingAh": dischargingAh,
+        "powerGenerationWh": powerGenerationWh,
+        "powerConsumptionWh": powerConsumptionWh
+      };
 
   @override
   String toString() =>
       "DailyStats(batteryMinVoltage=$batteryMinVoltage V, batteryMaxVoltage=$batteryMaxVoltage V, maxChargingCurrent=$maxChargingCurrent A, maxDischargingCurrent=$maxDischargingCurrent A, maxChargingPower=$maxChargingPower W, maxDischargingPower=$maxDischargingPower W, chargingAmpHours=$chargingAh AH, dischargingAmpHours=$dischargingAh AH, powerGeneration=$powerGenerationWh WH, powerConsumption=$powerConsumptionWh WH)";
 }
 
+class PowerStatus {
+  /// Current battery capacity value (state of charge), 0..100%
+  int batterySOC = 0;
+
+  /// battery voltage in V. Precision: 1 decimal points.
+  double batteryVoltage = 0;
+
+  /// charging current (to battery), A. Precision: 2 decimal points.
+  double chargingCurrentToBattery = 0;
+
+  /// battery temperature in °C
+  int batteryTemp = 0;
+
+  /// controller temperature in °C
+  int controllerTemp = 0;
+
+  /// Street light (load) voltage in V. Precision: 1 decimal points.
+  double loadVoltage = 0;
+
+  /// Street light (load) current in A. Precision: 2 decimal points.
+  double loadCurrent = 0;
+
+  /// Street light (load) power, in W
+  int loadPower = 0;
+
+  /// solar panel voltage, in V. Precision: 1 decimal points.
+  double solarPanelVoltage = 0;
+
+  /// Solar panel current (to controller), in A. Precision: 2 decimal points.
+  double solarPanelCurrent = 0;
+
+  /// charging power, in W
+  int solarPanelPower = 0;
+
+  Map<String, Object?> toJson() => {
+    "batterySOC": batterySOC,
+    "batteryVoltage": batteryVoltage,
+    "chargingCurrentToBattery": chargingCurrentToBattery,
+    "batteryTemp": batteryTemp,
+    "controllerTemp": controllerTemp,
+    "loadVoltage": loadVoltage,
+    "loadCurrent": loadCurrent,
+    "loadPower": loadPower,
+    "solarPanelVoltage": solarPanelVoltage,
+    "solarPanelCurrent": solarPanelCurrent,
+    "solarPanelPower": solarPanelPower
+  };
+
+  @override
+  String toString() =>
+      "PowerStatus(batterySOC=$batterySOC%, batteryVoltage=$batteryVoltage V, chargingCurrentToBattery=$chargingCurrentToBattery A, batteryTemp=$batteryTemp°C, controllerTemp=$controllerTemp°C, loadVoltage=$loadVoltage V, loadCurrent=$loadCurrent A, loadPower=$loadPower W, solarPanelVoltage=$solarPanelVoltage V, solarPanelCurrent=$solarPanelCurrent A, solarPanelPower=$solarPanelPower W)";
+}
