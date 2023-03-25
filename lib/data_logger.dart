@@ -61,7 +61,7 @@ class CompositeDataLogger implements DataLogger {
 
 /// Logs [RenogyData] to stdout as a CSV stream.
 class StdoutDataLogger implements DataLogger {
-  final _csv = _CsvRenogyWriter(_CSVWriter(stdout));
+  final _csv = _CsvRenogyWriter(stdout);
   final bool utc;
   StdoutDataLogger(this.utc);
 
@@ -86,26 +86,18 @@ class StdoutDataLogger implements DataLogger {
 }
 
 /// Prints CSV to given [StringSink].
-class _CSVWriter {
-  final StringSink _sink;
-  _CSVWriter(this._sink);
-
-  void writeHeader(List<String> header) {
-    writeLine(header);
-  }
-  void writeLine(List<Object?> line) {
-    _sink.writeln(const ListToCsvConverter().convert([line]));
-  }
-}
-
 class _CsvRenogyWriter {
   final _formatter = DateFormat("yyyy-MM-dd'T'HH':'mm':'ss");
-  final _CSVWriter _csv;
+  final StringSink _sink;
 
-  _CsvRenogyWriter(this._csv);
+  _CsvRenogyWriter(this._sink);
+
+  void _writeLine(List<Object?> line) {
+    _sink.writeln(const ListToCsvConverter().convert([line]));
+  }
 
   void writeHeader() {
-    _csv.writeHeader([
+    _writeLine([
       "DateTime",
       "BatterySOC",
       "BatteryVoltage",
@@ -133,7 +125,7 @@ class _CsvRenogyWriter {
 
   void writeLine(RenogyData data, bool utc) {
     final now = utc ? DateTime.now().toUtc() : DateTime.now();
-    _csv.writeLine([
+    _writeLine([
       _formatter.format(now),
       data.powerStatus.batterySOC,
       data.powerStatus.batteryVoltage,
@@ -173,10 +165,10 @@ class CSVDataLogger implements DataLogger {
   void init() {
     if (file.existsSync()) {
       _ioSink = file.openWrite(mode: FileMode.writeOnlyAppend);
-      _csv = _CsvRenogyWriter(_CSVWriter(_ioSink));
+      _csv = _CsvRenogyWriter(_ioSink);
     } else {
       _ioSink = file.openWrite();
-      _csv = _CsvRenogyWriter(_CSVWriter(_ioSink));
+      _csv = _CsvRenogyWriter(_ioSink);
       _csv.writeHeader();
     }
   }
