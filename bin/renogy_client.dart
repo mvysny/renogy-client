@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
+import 'package:renogy_client/utils/closeable.dart';
 
 void main(List<String> arguments) {
   final args = Args.parse(arguments);
@@ -15,13 +16,13 @@ void main(List<String> arguments) {
       final RenogyData allData = client.getAllData();
       print(allData.toJsonString());
     } finally {
-      client.close();
+      client.closeQuietly();
     }
   } else {
     try {
       _mainLoop(client, args);
     } on Exception {
-      client.close();
+      client.closeQuietly();
       rethrow;
     }
   }
@@ -65,8 +66,8 @@ void _mainLoop(RenogyClient client, Args args) {
     terminate(ProcessSignal signal) {
       _log.fine("Shutting down");
       t.cancel();
-      dataLogger.close();
-      client.close();
+      dataLogger.closeQuietly();
+      client.closeQuietly();
       _log.fine("Closed $client");
       exit(0);
     }
@@ -77,7 +78,7 @@ void _mainLoop(RenogyClient client, Args args) {
     // will keep the process alive. The terminate() function will be called on CTRL+C,
     // canceling the timer, closing everything and calling exit(0).
   } on Exception {
-    dataLogger.close();
+    dataLogger.closeQuietly();
     rethrow;
   }
 }

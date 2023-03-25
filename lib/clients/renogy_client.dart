@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:renogy_client/utils/closeable.dart';
 
 enum ChargingState {
   /// Charging is deactivated. There is no current/voltage detected from the solar panels.
@@ -378,7 +379,7 @@ class RenogyData {
   String toString() => toJsonString();
 }
 
-abstract class RenogyClient {
+abstract class RenogyClient extends Closeable {
   /// Retrieves the [SystemInfo] from the device.
   SystemInfo getSystemInfo();
 
@@ -390,7 +391,4 @@ abstract class RenogyClient {
   ///
   /// Throws [RenogyException] if the data retrieval fails
   RenogyData getAllData({SystemInfo? cachedSystemInfo});
-
-  /// Closes the client. The client must not be used afterwards.
-  void close();
 }

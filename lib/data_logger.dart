@@ -4,9 +4,10 @@ import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
+import 'package:renogy_client/utils/closeable.dart';
 
 /// Logs [RenogyData] somewhere.
-abstract class DataLogger {
+abstract class DataLogger extends Closeable {
   /// Initializes the logger; e.g. makes sure the CSV file exists and creates one with a header if it doesn't.
   void init();
 
@@ -15,9 +16,6 @@ abstract class DataLogger {
 
   /// Deletes all records older than given number of [days].
   void deleteRecordsOlderThan(int days);
-
-  /// closes the logger.
-  void close();
 }
 
 class CompositeDataLogger implements DataLogger {
@@ -32,12 +30,8 @@ class CompositeDataLogger implements DataLogger {
 
   @override
   void close() {
-    for (var dataLogger in dataLoggers) {
-      try {
-        dataLogger.close();
-      } on Exception catch (e, s) {
-        _log.warning('Failed to close $dataLogger: $e\n$s');
-      }
+    for (var it in dataLoggers) {
+      it.closeQuietly();
     }
     _log.fine("Closed $dataLoggers");
     dataLoggers.clear();
@@ -169,6 +163,7 @@ class _CsvRenogyWriter {
 class CSVDataLogger implements DataLogger {
   final File file;
   final bool utc;
+  /// Opened [file]. Created in [init].
   late IOSink _ioSink;
   late _CsvRenogyWriter _csv;
   CSVDataLogger(this.file, this.utc);
@@ -190,8 +185,11 @@ class CSVDataLogger implements DataLogger {
 
   @override
   void close() async {
-    await _ioSink.flush();
-    await _ioSink.close();
+    try {
+      await _ioSink.flush();
+    } finally {
+      await _ioSink.close();
+    }
   }
 
   @override
