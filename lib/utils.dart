@@ -7,3 +7,43 @@ extension FileExtention on FileSystemEntity {
     return basename(path);
   }
 }
+
+/// Represents a day.
+class LocalDate implements Comparable<LocalDate> {
+  final int year;
+  final int month;
+  final int day;
+
+  LocalDate(this.year, this.month, this.day);
+
+  @override
+  String toString() => "$year-$month-$day";
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LocalDate &&
+          runtimeType == other.runtimeType &&
+          year == other.year &&
+          month == other.month &&
+          day == other.day;
+
+  @override
+  int get hashCode => year.hashCode ^ month.hashCode ^ day.hashCode;
+
+  @override
+  int compareTo(LocalDate other) {
+    var result = year.compareTo(other.year);
+    if (result == 0) result = month.compareTo(other.month);
+    if (result == 0) result = day.compareTo(other.day);
+    return result;
+  }
+}
+
+extension DateTimeExtensions on DateTime {
+  /// Returns the date part.
+  LocalDate getLocalDate() {
+    var local = this.toLocal();
+    return LocalDate(local.year, local.month, local.day);
+  }
+}
