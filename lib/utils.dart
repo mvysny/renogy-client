@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:path/path.dart';
 
 extension FileExtention on FileSystemEntity {
@@ -45,5 +46,16 @@ extension DateTimeExtensions on DateTime {
   LocalDate getLocalDate() {
     var local = this.toLocal();
     return LocalDate(local.year, local.month, local.day);
+  }
+}
+
+extension RandomRanges on Random {
+  int nextIntRange(int min, int max) {
+    if (min > max) throw ArgumentError.value(max, "max", "must be higher than $min");
+    return nextInt(max - min) + min;
+  }
+  double nextDoubleRange(double min, double max) {
+    if (min > max) throw ArgumentError.value(max, "max", "must be higher than $min");
+    return nextDouble() * (max - min) + min;
   }
 }
