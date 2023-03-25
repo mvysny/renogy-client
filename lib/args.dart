@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
-import 'package:renogy_client/utils/data_logger.dart';
+import 'package:renogy_client/data_logger.dart';
 import 'package:renogy_client/utils/utils.dart';
 
 class Args {
@@ -131,7 +131,7 @@ class Args {
     final result = CompositeDataLogger();
     try {
       if (result.dataLoggers.isEmpty) {
-        result.dataLoggers.add(StdoutDataLogger());
+        result.dataLoggers.add(StdoutDataLogger(utc));
       }
     } catch(e) {
       result.close();
