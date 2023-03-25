@@ -89,6 +89,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.1"
+  dylib:
+    dependency: transitive
+    description:
+      name: dylib
+      sha256: bf609b3eb6492a3309b3d1dbe8f83a4031de5535dd7686be33487051cc760bb0
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.3"
+  ffi:
+    dependency: transitive
+    description:
+      name: ffi
+      sha256: a38574032c5f1dd06c4aee541789906c12ccaab8ba01446e800d9c5b79c4a978
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   file:
     dependency: transitive
     description:
@@ -153,6 +169,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.7"
+  libserialport:
+    dependency: "direct main"
+    description:
+      name: libserialport
+      sha256: "392e1592def65282429832ec66fa25e9e163d3b37716b97691482e2406720727"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0+1"
   lints:
     dependency: "direct dev"
     description:
@@ -217,6 +241,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  platform:
+    dependency: transitive
+    description:
+      name: platform
+      sha256: "4a451831508d7d6ca779f7ac6e212b4023dd5a7d08a27a63da33756410e32b76"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   pool:
     dependency: transitive
     description:
