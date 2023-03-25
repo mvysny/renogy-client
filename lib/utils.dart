@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:path/path.dart';
 
 extension FileExtention on FileSystemEntity {
@@ -70,3 +71,29 @@ extension RandomRanges on Random {
 }
 
 final Random random = Random();
+
+int crc16ISOHDLC(Uint8List bytes) {
+  int crc = 0xffff;
+  for (var b in bytes) {
+    crc ^= b;
+    for (int i = 0; i < 8; i++)
+      crc = (crc & 1) != 0 ? (crc >> 1) ^ 0x8408 : crc >> 1;
+  }
+  return crc ^ 0xffff;
+}
+
+int crc16_CCITT_FALSE(Uint8List bytes) {
+  int initial = 0xFFFF; // initial value
+  int polynomial = 0x1021;   // 0001 0000 0010 0001  (0, 5, 12)
+
+  for (var b in bytes) {
+    for (int i = 0; i < 8; i++) {
+      bool bit = ((b >> (7-i) & 1) == 1);
+      bool c15 = ((initial >> 15 & 1) == 1);
+      initial <<= 1;
+      if (c15 ^ bit) initial ^= polynomial;
+    }
+  }
+
+  return initial &= 0xffff;
+}
