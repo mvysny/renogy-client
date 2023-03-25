@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:collection/collection.dart';
@@ -327,4 +328,50 @@ class SystemInfo {
   @override
   String toString() =>
       "SystemInfo(maxVoltage=$maxVoltage V, ratedChargingCurrent=$ratedChargingCurrent A, ratedDischargingCurrent=$ratedDischargingCurrent A, productType=$productType, productModel=$productModel, softwareVersion=$softwareVersion, hardwareVersion=$hardwareVersion, serialNumber=$serialNumber)";
+}
+
+/// Thrown when Renogy returns a failure.
+class RenogyException implements Exception {
+  /// the message
+  final String message;
+
+  /// the error code as received from Renogy. See [fromCode] for a list of
+  //  defined error codes. May be null if thrown because the response was mangled.
+  final int? code;
+
+  RenogyException(this.message, { this.code });
+
+  @override
+  String toString() => "RenogyException: $code $message";
+
+  static RenogyException fromCode(int code) {
+    String message = "Unknown";
+    switch(code) {
+      case 1: message = "Function code not supported"; break;
+      case 2: message = "PDU start address is not correct or PDU start address + data length"; break;
+      case 3: message = "Data length in reading or writing register is too large"; break;
+      case 4: message = "Client fails to read or write register"; break;
+      case 5: message = "Data check code sent by server is not correct"; break;
+    }
+    return RenogyException(message, code: code);
+  }
+}
+
+/// Contains all data which can be pulled from the Renogy device.
+class RenogyData {
+  late SystemInfo systemInfo;
+  late PowerStatus powerStatus;
+  late DailyStats dailyStats;
+  late HistoricalData historicalData;
+  late RenogyStatus status;
+
+  Map<String, Object?> toJson() => {
+    "systemInfo": systemInfo.toJson(),
+    "powerStatus": powerStatus.toJson(),
+    "dailyStats": dailyStats.toJson(),
+    "historicalData": historicalData.toJson(),
+    "status": status.toJson()
+  };
+
+  String toJsonString({ bool prettyPrint = true}) => JsonEncoder.withIndent(prettyPrint ? "  " : null).convert(this);
 }
