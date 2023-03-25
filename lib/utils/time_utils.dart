@@ -14,7 +14,7 @@ class LocalDate implements Comparable<LocalDate> {
     final local = dateTime.toLocal();
     return LocalDate(local.year, local.month, local.day);
   }
-  factory LocalDate.now() => LocalDate.from(DateTime.now());
+  factory LocalDate.today() => LocalDate.from(DateTime.now());
 
   @override
   String toString() => "$year-$month-$day";
@@ -27,6 +27,11 @@ class LocalDate implements Comparable<LocalDate> {
               year == other.year &&
               month == other.month &&
               day == other.day;
+
+  bool operator >(LocalDate other) => compareTo(other) > 0;
+  bool operator >=(LocalDate other) => compareTo(other) >= 0;
+  bool operator <(LocalDate other) => compareTo(other) < 0;
+  bool operator <=(LocalDate other) => compareTo(other) <= 0;
 
   @override
   int get hashCode => year.hashCode ^ month.hashCode ^ day.hashCode;
@@ -48,7 +53,7 @@ extension DateTimeExtensions on DateTime {
 /// Calls [onMidnight] at midnight, once per day.
 class MidnightAlarm {
   final Function() onMidnight;
-  var _today = LocalDate.now();
+  var _today = LocalDate.today();
 
   MidnightAlarm(this.onMidnight);
 
@@ -56,7 +61,7 @@ class MidnightAlarm {
   ///
   /// Returns true if we just crossed midnight.
   bool tick() {
-    final today2 = LocalDate.now();
+    final today2 = LocalDate.today();
     if (today2 != _today) {
       _today = today2;
       onMidnight();
