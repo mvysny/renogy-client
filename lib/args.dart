@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
+import 'package:renogy_client/data_logger.dart';
 import 'package:renogy_client/utils.dart';
 
 class Args {
@@ -25,7 +26,7 @@ class Args {
   final String? postgres;
 
   /// overwrites status to file other than the default 'status.json'
-  final File? statusFile;
+  final File statusFile;
 
   /// in seconds: how frequently to poll the controller for data, defaults to 10
   final int pollInterval;
@@ -91,7 +92,7 @@ class Args {
           _toFile(ar['csv']),
           _toFile(ar['sqlite']),
           ar['postgres'],
-          _toFile(ar['statusfile']),
+          _toFile(ar['statusfile'])!,
           pollInterval,
           pruneLog,
           ar['verbose'] as bool
@@ -123,5 +124,19 @@ class Args {
   @override
   String toString() {
     return 'Args{device: $device, printStatusOnly: $printStatusOnly, utc: $utc, csv: $csv, sqlite: $sqlite, postgres: $postgres, stateFile: $statusFile, pollInterval: $pollInterval, pruneLog: $pruneLog, verbose: $verbose}';
+  }
+
+  /// Creates and returns the data logger. Don't forget to call [DataLogger.init].
+  DataLogger newDataLogger() {
+    final result = CompositeDataLogger();
+    try {
+      if (result.dataLoggers.isEmpty) {
+        result.dataLoggers.add(StdoutDataLogger());
+      }
+    } catch(e) {
+      result.close();
+      rethrow;
+    }
+    return result;
   }
 }
