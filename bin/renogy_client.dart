@@ -69,8 +69,11 @@ void _mainLoop(RenogyClient client, Args args) {
       exit(0);
     }
 
-    ProcessSignal.sigint.watch().listen(terminate);
-    ProcessSignal.sigterm.watch().listen(terminate);
+    ProcessSignal.sigint.watch().listen(terminate); // CTRL+C
+    ProcessSignal.sigterm.watch().listen(terminate); // we're killed by someone
+    // the function may now terminate (and main() along with it): the Timer+Event Queue
+    // will keep the process alive. The terminate() function will be called on CTRL+C,
+    // canceling the timer, closing everything and calling exit(0).
   } on Exception {
     dataLogger.close();
     rethrow;
