@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
 extension FileExtention on FileSystemEntity {
@@ -70,3 +71,22 @@ extension RandomRanges on Random {
 }
 
 final Random random = Random();
+
+extension CloseAndFlush on IOSink {
+  /// calls [flush] before [close]
+  Future flushAndClose() async {
+    try {
+      await flush();
+    } finally {
+      closeQuietly();
+    }
+  }
+
+  Future closeQuietly() async {
+    try {
+      await close();
+    } on Exception catch (e, s) {
+      Logger(runtimeType.toString()).warning("Failed to close $this", e, s);
+    }
+  }
+}

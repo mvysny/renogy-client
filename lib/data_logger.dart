@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/closeable.dart';
+import 'package:renogy_client/utils/utils.dart';
 
 /// Logs [RenogyData] somewhere.
 abstract class DataLogger extends Closeable {
@@ -184,12 +185,8 @@ class CSVDataLogger implements DataLogger {
   void deleteRecordsOlderThan(int days) {}
 
   @override
-  void close() async {
-    try {
-      await _ioSink.flush();
-    } finally {
-      await _ioSink.close();
-    }
+  Future close() async {
+    await _ioSink.closeQuietly();
   }
 
   @override
