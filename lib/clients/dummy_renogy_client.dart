@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:renogy_client/clients/renogy_client.dart';
+import 'package:renogy_client/utils/time_utils.dart';
 import 'package:renogy_client/utils/utils.dart';
 
 /// Returns random data, emulating stuff returned by an actual Renogy Client
