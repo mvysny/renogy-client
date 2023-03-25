@@ -130,6 +130,9 @@ class Args {
   DataLogger newDataLogger() {
     final result = CompositeDataLogger();
     try {
+      if (csv != null) {
+        result.dataLoggers.add(CSVDataLogger(csv!, utc));
+      }
       if (result.dataLoggers.isEmpty) {
         result.dataLoggers.add(StdoutDataLogger(utc));
       }

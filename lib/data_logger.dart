@@ -39,13 +39,17 @@ class CompositeDataLogger implements DataLogger {
         _log.warning('Failed to close $dataLogger: $e\n$s');
       }
     }
+    _log.fine("Closed $dataLoggers");
+    dataLoggers.clear();
   }
 
   @override
   void deleteRecordsOlderThan(int days) {
+    _log.info("Deleting old records");
     for (var dataLogger in dataLoggers) {
       dataLogger.deleteRecordsOlderThan(days);
     }
+    _log.info("Successfully deleted old records");
   }
 
   @override
@@ -60,6 +64,7 @@ class CompositeDataLogger implements DataLogger {
   String toString() => dataLoggers.toString();
 }
 
+/// Logs [RenogyData] to stdout as a CSV stream.
 class StdoutDataLogger implements DataLogger {
   final _csv = _CsvRenogyWriter(_CSVWriter(stdout));
   final bool utc;
@@ -80,8 +85,12 @@ class StdoutDataLogger implements DataLogger {
   void append(RenogyData data) {
     _csv.writeLine(data, utc);
   }
+
+  @override
+  String toString() => (StdoutDataLogger).toString();
 }
 
+/// Prints CSV to given [StringSink].
 class _CSVWriter {
   final StringSink _sink;
   _CSVWriter(this._sink);
@@ -154,4 +163,43 @@ class _CsvRenogyWriter {
       data.status.faults.map((e) => e.name).join(",")
     ]);
   }
+}
+
+/// Logs [RenogyData] to a CSV [file].
+class CSVDataLogger implements DataLogger {
+  final File file;
+  final bool utc;
+  late IOSink _ioSink;
+  late _CsvRenogyWriter _csv;
+  CSVDataLogger(this.file, this.utc);
+
+  @override
+  void init() {
+    if (file.existsSync()) {
+      _ioSink = file.openWrite(mode: FileMode.writeOnlyAppend);
+      _csv = _CsvRenogyWriter(_CSVWriter(_ioSink));
+    } else {
+      _ioSink = file.openWrite();
+      _csv = _CsvRenogyWriter(_CSVWriter(_ioSink));
+      _csv.writeHeader();
+    }
+  }
+
+  @override
+  void deleteRecordsOlderThan(int days) {}
+
+  @override
+  void close() async {
+    await _ioSink.flush();
+    await _ioSink.close();
+  }
+
+  @override
+  void append(RenogyData data) async {
+    _csv.writeLine(data, utc);
+    await _ioSink.flush();
+  }
+
+  @override
+  String toString() => "CSVDataLogger{$file, utc=$utc}";
 }

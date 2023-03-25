@@ -63,9 +63,11 @@ void _mainLoop(RenogyClient client, Args args) {
 
     final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
     terminate(ProcessSignal signal) {
+      _log.fine("Shutting down");
       t.cancel();
       dataLogger.close();
       client.close();
+      _log.fine("Closed $client");
       exit(0);
     }
 
