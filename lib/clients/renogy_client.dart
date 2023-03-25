@@ -259,20 +259,72 @@ class PowerStatus {
   int solarPanelPower = 0;
 
   Map<String, Object?> toJson() => {
-    "batterySOC": batterySOC,
-    "batteryVoltage": batteryVoltage,
-    "chargingCurrentToBattery": chargingCurrentToBattery,
-    "batteryTemp": batteryTemp,
-    "controllerTemp": controllerTemp,
-    "loadVoltage": loadVoltage,
-    "loadCurrent": loadCurrent,
-    "loadPower": loadPower,
-    "solarPanelVoltage": solarPanelVoltage,
-    "solarPanelCurrent": solarPanelCurrent,
-    "solarPanelPower": solarPanelPower
-  };
+        "batterySOC": batterySOC,
+        "batteryVoltage": batteryVoltage,
+        "chargingCurrentToBattery": chargingCurrentToBattery,
+        "batteryTemp": batteryTemp,
+        "controllerTemp": controllerTemp,
+        "loadVoltage": loadVoltage,
+        "loadCurrent": loadCurrent,
+        "loadPower": loadPower,
+        "solarPanelVoltage": solarPanelVoltage,
+        "solarPanelCurrent": solarPanelCurrent,
+        "solarPanelPower": solarPanelPower
+      };
 
   @override
   String toString() =>
       "PowerStatus(batterySOC=$batterySOC%, batteryVoltage=$batteryVoltage V, chargingCurrentToBattery=$chargingCurrentToBattery A, batteryTemp=$batteryTemp°C, controllerTemp=$controllerTemp°C, loadVoltage=$loadVoltage V, loadCurrent=$loadCurrent A, loadPower=$loadPower W, solarPanelVoltage=$solarPanelVoltage V, solarPanelCurrent=$solarPanelCurrent A, solarPanelPower=$solarPanelPower W)";
+}
+
+enum ProductType {
+  Controller(0),
+  Inverter(1);
+
+  final int modbusValue;
+
+  const ProductType(this.modbusValue);
+}
+
+/// The static system information: hw/sw version, specs etc.
+class SystemInfo {
+  /// max. voltage supported by the system: 12V/24V/36V/48V/96V; 0xFF=automatic recognition of system voltage
+  int maxVoltage = 0;
+
+  /// rated charging current in A: 10A/20A/30A/45A/60A
+  int ratedChargingCurrent = 0;
+
+  /// rated discharging current, 10A/20A/30A/45A/60A
+  int ratedDischargingCurrent = 0;
+
+  /// product type
+  ProductType? productType = null;
+
+  /// the controller's model
+  String productModel = "";
+
+  /// Vmajor.minor.bugfix
+  String softwareVersion = "";
+
+  /// Vmajor.minor.bugfix
+  String hardwareVersion = "";
+
+  /// serial number, 4 bytes formatted as a hex string, e.g. `1501FFFF`,
+  //  * indicating it's the 65535th (hexadecimal FFFFH) unit produced in Jan. of 2015.
+  String serialNumber = "";
+
+  Map<String, Object?> toJson() => {
+        "maxVoltage": maxVoltage,
+        "ratedChargingCurrent": ratedChargingCurrent,
+        "ratedDischargingCurrent": ratedDischargingCurrent,
+        "productType": productType?.name,
+        "productModel": productModel,
+        "softwareVersion": softwareVersion,
+        "hardwareVersion": hardwareVersion,
+        "serialNumber": serialNumber
+      };
+
+  @override
+  String toString() =>
+      "SystemInfo(maxVoltage=$maxVoltage V, ratedChargingCurrent=$ratedChargingCurrent A, ratedDischargingCurrent=$ratedDischargingCurrent A, productType=$productType, productModel=$productModel, softwareVersion=$softwareVersion, hardwareVersion=$hardwareVersion, serialNumber=$serialNumber)";
 }
