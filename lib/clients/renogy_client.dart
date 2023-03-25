@@ -366,12 +366,28 @@ class RenogyData {
   late RenogyStatus status;
 
   Map<String, Object?> toJson() => {
-    "systemInfo": systemInfo.toJson(),
-    "powerStatus": powerStatus.toJson(),
-    "dailyStats": dailyStats.toJson(),
-    "historicalData": historicalData.toJson(),
-    "status": status.toJson()
+    "systemInfo": systemInfo,
+    "powerStatus": powerStatus,
+    "dailyStats": dailyStats,
+    "historicalData": historicalData,
+    "status": status
   };
 
   String toJsonString({ bool prettyPrint = true}) => JsonEncoder.withIndent(prettyPrint ? "  " : null).convert(this);
+}
+
+abstract class RenogyClient {
+  /// Retrieves the [SystemInfo] from the device.
+  SystemInfo getSystemInfo();
+
+  /// Retrieves all current data from a Renogy device. Usually [SystemInfo] is only
+  /// fetched once and then cached; it can be passed in as [cachedSystemInfo]
+  /// to avoid repeated retrieval.
+  ///
+  /// If [cachedSystemInfo] is not null, this information will not be fetched.
+  ///
+  /// Throws [RenogyException] if the data retrieval fails
+  RenogyData getAllData({SystemInfo? cachedSystemInfo});
+
+  void close();
 }
