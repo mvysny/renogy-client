@@ -373,6 +373,9 @@ class RenogyData {
   };
 
   String toJsonString({ bool prettyPrint = true}) => JsonEncoder.withIndent(prettyPrint ? "  " : null).convert(this);
+
+  @override
+  String toString() => toJsonString();
 }
 
 abstract class RenogyClient {

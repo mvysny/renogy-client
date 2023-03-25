@@ -88,7 +88,7 @@ class DummyRenogyClient implements RenogyClient {
     final solarPanelPowerW = solarPanelVoltage * solarPanelCurrent;
 
     final batteryVoltage = random.nextDoubleRange(
-        systemInfo.maxVoltage as double, systemInfo.maxVoltage * 1.19);
+        systemInfo.maxVoltage.toDouble(), systemInfo.maxVoltage * 1.19);
 // how much current flows into the battery at the moment.
     final currentToBattery = solarPanelPowerW / batteryVoltage;
 
