@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:collection/collection.dart';
 
 enum ChargingState {
@@ -124,12 +126,13 @@ class RenogyStatus {
   /// current faults, empty if none.
   Set<ControllerFaults> faults = {};
 
-  Map toJson() => {
-    "streetLightOn": streetLightOn,
-    "streetLightBrightness": streetLightBrightness,
-    "chargingState": chargingState?.name,
-    "faults": faults.map((e) => e.name).join(",")
-  };
+  Map toJson() =>
+      {
+        "streetLightOn": streetLightOn,
+        "streetLightBrightness": streetLightBrightness,
+        "chargingState": chargingState?.name,
+        "faults": faults.map((e) => e.name).join(",")
+      };
 
   @override
   String toString() => 'RenogyStatus${toJson().toString()}';
@@ -139,29 +142,78 @@ class RenogyStatus {
 class HistoricalData {
   /// Total number of operating days
   int daysUp = 0;
+
   /// Total number of battery over-discharges
   int batteryOverDischargeCount = 0;
+
   /// Total number of battery full-charges.
   int batteryFullChargeCount = 0;
+
   /// Total charging amp-hrs of the battery.
   int totalChargingBatteryAH = 0;
+
   /// Total discharging amp-hrs of the battery. mavi: probably only applicable to inverters, 0 for controller.
   int totalDischargingBatteryAH = 0;
+
   /// cumulative power generation in Wh. Probably only applies to controller, will be 0 for inverter.
   int cumulativePowerGenerationWH = 0;
+
   /// cumulative power consumption in Wh. mavi: probably only applicable to inverters, 0 for controller.
   int cumulativePowerConsumptionWH = 0;
 
-  Map toJson() => {
-    "daysUp": daysUp,
-    "batteryOverDischargeCount": batteryOverDischargeCount,
-    "batteryFullChargeCount": batteryFullChargeCount,
-    "totalChargingBatteryAH": totalChargingBatteryAH,
-    "totalDischargingBatteryAH": totalDischargingBatteryAH,
-    "cumulativePowerGenerationWH": cumulativePowerGenerationWH,
-    "cumulativePowerConsumptionWH": cumulativePowerConsumptionWH
-  };
+  Map toJson() =>
+      {
+        "daysUp": daysUp,
+        "batteryOverDischargeCount": batteryOverDischargeCount,
+        "batteryFullChargeCount": batteryFullChargeCount,
+        "totalChargingBatteryAH": totalChargingBatteryAH,
+        "totalDischargingBatteryAH": totalDischargingBatteryAH,
+        "cumulativePowerGenerationWH": cumulativePowerGenerationWH,
+        "cumulativePowerConsumptionWH": cumulativePowerConsumptionWH
+      };
 
   @override
   String toString() => 'HistoricalData${toJson().toString()}';
 }
+
+/// Daily statistics.
+class DailyStats {
+  /// Battery's min. voltage of the current day, V. Precision: 1 decimal points.
+  double batteryMinVoltage = 0;
+  /// Battery's max. voltage of the current day, V. Precision: 1 decimal points.
+  double batteryMaxVoltage = 0;
+  /// Max. charging current of the current day, A. Probably applies to controller only. Precision: 2 decimal points.
+  double maxChargingCurrent = 0;
+  /// Max. discharging current of the current day, A. mavi: probably only applies to inverter; will be 0 for controller. Precision: 2 decimal points.
+  double maxDischargingCurrent = 0;
+  /// Max. charging power of the current day, W. mavi: probably only applies to controller; will be 0 for inverter.
+  int maxChargingPower = 0;
+  /// Max. discharging power of the current day, W. mavi: probably only applies to inverter; will be 0 for controller.
+  int maxDischargingPower = 0;
+  /// Charging amp-hrs of the current day, Ah. mavi: probably only applies to controller; will be 0 for inverter.
+  int chargingAh = 0;
+  /// Discharging amp-hrs of the current day, Ah. mavi: probably only applies to inverter; will be 0 for controller.
+  int dischargingAh = 0;
+  /// Power generation of the current day, Wh. Probably only applies to controller.
+  int powerGenerationWh = 0;
+  /// Power consumption of the current day, Wh. Probably only applies to inverter.
+  int powerConsumptionWh = 0;
+
+  Map toJson() => {
+    "batteryMinVoltage": batteryMinVoltage,
+    "batteryMaxVoltage": batteryMaxVoltage,
+    "maxChargingCurrent": maxChargingCurrent,
+    "maxDischargingCurrent": maxDischargingCurrent,
+    "maxChargingPower": maxChargingPower,
+    "maxDischargingPower": maxDischargingPower,
+    "chargingAh": chargingAh,
+    "dischargingAh": dischargingAh,
+    "powerGenerationWh": powerGenerationWh,
+    "powerConsumptionWh": powerConsumptionWh
+  };
+
+  @override
+  String toString() =>
+      "DailyStats(batteryMinVoltage=$batteryMinVoltage V, batteryMaxVoltage=$batteryMaxVoltage V, maxChargingCurrent=$maxChargingCurrent A, maxDischargingCurrent=$maxDischargingCurrent A, maxChargingPower=$maxChargingPower W, maxDischargingPower=$maxDischargingPower W, chargingAmpHours=$chargingAh AH, dischargingAmpHours=$dischargingAh AH, powerGeneration=$powerGenerationWh WH, powerConsumption=$powerConsumptionWh WH)";
+}
+
