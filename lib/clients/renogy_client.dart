@@ -132,5 +132,36 @@ class RenogyStatus {
   };
 
   @override
-  String toString() => toJson().toString();
+  String toString() => 'RenogyStatus${toJson().toString()}';
+}
+
+/// Historical data summary
+class HistoricalData {
+  /// Total number of operating days
+  int daysUp = 0;
+  /// Total number of battery over-discharges
+  int batteryOverDischargeCount = 0;
+  /// Total number of battery full-charges.
+  int batteryFullChargeCount = 0;
+  /// Total charging amp-hrs of the battery.
+  int totalChargingBatteryAH = 0;
+  /// Total discharging amp-hrs of the battery. mavi: probably only applicable to inverters, 0 for controller.
+  int totalDischargingBatteryAH = 0;
+  /// cumulative power generation in Wh. Probably only applies to controller, will be 0 for inverter.
+  int cumulativePowerGenerationWH = 0;
+  /// cumulative power consumption in Wh. mavi: probably only applicable to inverters, 0 for controller.
+  int cumulativePowerConsumptionWH = 0;
+
+  Map toJson() => {
+    "daysUp": daysUp,
+    "batteryOverDischargeCount": batteryOverDischargeCount,
+    "batteryFullChargeCount": batteryFullChargeCount,
+    "totalChargingBatteryAH": totalChargingBatteryAH,
+    "totalDischargingBatteryAH": totalDischargingBatteryAH,
+    "cumulativePowerGenerationWH": cumulativePowerGenerationWH,
+    "cumulativePowerConsumptionWH": cumulativePowerConsumptionWH
+  };
+
+  @override
+  String toString() => 'HistoricalData${toJson().toString()}';
 }

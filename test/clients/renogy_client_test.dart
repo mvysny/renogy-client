@@ -8,6 +8,6 @@ void main() {
               ..chargingState = ChargingState.BoostChargingMode
               ..faults = {ControllerFaults.AmbientTemperatureTooHigh})
             .toString(),
-        "{streetLightOn: false, streetLightBrightness: 0, chargingState: BoostChargingMode, faults: AmbientTemperatureTooHigh}");
+        "RenogyStatus{streetLightOn: false, streetLightBrightness: 0, chargingState: BoostChargingMode, faults: AmbientTemperatureTooHigh}");
   });
 }
