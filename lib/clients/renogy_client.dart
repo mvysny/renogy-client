@@ -110,3 +110,27 @@ enum ControllerFaults {
     return values.where((it) => it._isPresent(modbusValue)).toSet();
   }
 }
+
+class RenogyStatus {
+  /// Whether the street light is on or off
+  bool streetLightOn = false;
+
+  /// street light brightness value, 0..100 in %
+  int streetLightBrightness = 0;
+
+  /// charging state (if known)
+  ChargingState? chargingState = null;
+
+  /// current faults, empty if none.
+  Set<ControllerFaults> faults = {};
+
+  Map toJson() => {
+    "streetLightOn": streetLightOn,
+    "streetLightBrightness": streetLightBrightness,
+    "chargingState": chargingState?.name,
+    "faults": faults.map((e) => e.name).join(",")
+  };
+
+  @override
+  String toString() => toJson().toString();
+}
