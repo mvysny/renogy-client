@@ -19,6 +19,7 @@ abstract class DataLogger extends Closeable {
   void deleteRecordsOlderThan(int days);
 }
 
+/// Aggregates multiple [DataLogger]s. Add them to [dataLoggers] before calling [init].
 class CompositeDataLogger implements DataLogger {
   final dataLoggers = <DataLogger>[];
 
@@ -61,9 +62,8 @@ class CompositeDataLogger implements DataLogger {
 
 /// Logs [RenogyData] to stdout as a CSV stream.
 class StdoutDataLogger implements DataLogger {
-  final _csv = _CsvRenogyWriter(stdout);
-  final bool utc;
-  StdoutDataLogger(this.utc);
+  final _CsvRenogyWriter _csv;
+  StdoutDataLogger(bool utc) : _csv = _CsvRenogyWriter(stdout, utc);
 
   @override
   void init() {
@@ -78,7 +78,7 @@ class StdoutDataLogger implements DataLogger {
 
   @override
   void append(RenogyData data) {
-    _csv.writeLine(data, utc);
+    _csv.writeLine(data);
   }
 
   @override
@@ -89,8 +89,9 @@ class StdoutDataLogger implements DataLogger {
 class _CsvRenogyWriter {
   final _formatter = DateFormat("yyyy-MM-dd'T'HH':'mm':'ss");
   final StringSink _sink;
+  final bool utc;
 
-  _CsvRenogyWriter(this._sink);
+  _CsvRenogyWriter(this._sink, this.utc);
 
   void _writeLine(List<Object?> line) {
     _sink.writeln(const ListToCsvConverter().convert([line]));
@@ -123,7 +124,7 @@ class _CsvRenogyWriter {
     ]);
   }
 
-  void writeLine(RenogyData data, bool utc) {
+  void writeLine(RenogyData data) {
     final now = utc ? DateTime.now().toUtc() : DateTime.now();
     _writeLine([
       _formatter.format(now),
@@ -165,10 +166,10 @@ class CSVDataLogger implements DataLogger {
   void init() {
     if (file.existsSync()) {
       _ioSink = file.openWrite(mode: FileMode.writeOnlyAppend);
-      _csv = _CsvRenogyWriter(_ioSink);
+      _csv = _CsvRenogyWriter(_ioSink, utc);
     } else {
       _ioSink = file.openWrite();
-      _csv = _CsvRenogyWriter(_ioSink);
+      _csv = _CsvRenogyWriter(_ioSink, utc);
       _csv.writeHeader();
     }
   }
@@ -183,7 +184,7 @@ class CSVDataLogger implements DataLogger {
 
   @override
   void append(RenogyData data) async {
-    _csv.writeLine(data, utc);
+    _csv.writeLine(data);
     await _ioSink.flush();
   }
 

@@ -6,6 +6,7 @@ import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/closeable.dart';
+import 'package:renogy_client/utils/time_utils.dart';
 
 void main(List<String> arguments) {
   final args = Args.parse(arguments);
@@ -44,7 +45,7 @@ void _mainLoop(RenogyClient client, Args args) {
     dataLogger.init();
     dataLogger.deleteRecordsOlderThan(args.pruneLog);
 
-    // val midnightAlarm = MidnightAlarm { dataLogger.deleteRecordsOlderThan(args.pruneLog) }
+    final midnightAlarm = MidnightAlarm(() { dataLogger.deleteRecordsOlderThan(args.pruneLog); });
     looprun(Timer? t) {
       try {
         _log.fine("Getting all data from $client");
@@ -53,7 +54,7 @@ void _mainLoop(RenogyClient client, Args args) {
         _log.fine("Writing data to ${args.statusFile}");
         args.statusFile.writeAsStringSync(allData.toJsonString());
         dataLogger.append(allData);
-        // todo midnightAlarm.tick();
+        midnightAlarm.tick();
         _log.fine("Main loop: done");
       } on Exception catch (e, s) {
         // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
