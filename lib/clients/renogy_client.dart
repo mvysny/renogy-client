@@ -131,7 +131,7 @@ class RenogyStatus {
         "streetLightOn": streetLightOn,
         "streetLightBrightness": streetLightBrightness,
         "chargingState": chargingState?.name,
-        "faults": faults.map((e) => e.name).join(",")
+        "faults": faults.map((e) => e.name).toList()
       };
 
   @override
