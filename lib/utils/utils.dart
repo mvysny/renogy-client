@@ -55,5 +55,5 @@ mixin ComparableMixin<T> {
 
 /// Blocks until Enter is pressed.
 Future waitForEnter() async {
-  return stdin.transform(utf8.decoder).transform(LineSplitter()).first;
+  await stdin.transform(utf8.decoder).transform(LineSplitter()).first;
 }
