@@ -41,7 +41,7 @@ extension FullyIO on IO {
   Uint8List readFully(int noBytes) {
     if (noBytes < 0) throw ArgumentError.value(noBytes, "noBytes", "must be 0 or greater");
     if (noBytes == 0) return Uint8List(0);
-    final result = read(noBytes, timeout: 10000);
+    final result = read(noBytes, timeout: 0);
     if (result.length != noBytes) throw StateError("Expected $noBytes bytes but got $result");
     return result;
   }

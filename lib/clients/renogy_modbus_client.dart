@@ -64,11 +64,9 @@ class RenogyModbusClient {
   void _verifyCRC(int expected, Uint8List actual) {
     if (actual.length != 2) throw ArgumentError.value(actual, "actual", "must be of size 2");
     // for CRC, low byte is sent first, then the high byte.
-    final actualUShort =
-        ByteData.sublistView(actual).getUint16(0, Endian.little);
+    final actualUShort = ByteData.sublistView(actual).getUint16(0, Endian.little);
     if (actualUShort != expected) {
-      throw RenogyException(
-          "Checksum mismatch: expected ${expected.toRadixString(16)} but got ${actualUShort.toRadixString(16)}");
+      throw RenogyException("Checksum mismatch: expected ${expected.toRadixString(16)} but got ${actualUShort.toRadixString(16)}");
     }
   }
 
