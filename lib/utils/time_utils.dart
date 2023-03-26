@@ -1,5 +1,7 @@
+import 'package:renogy_client/utils/utils.dart';
+
 /// Represents a day.
-class LocalDate implements Comparable<LocalDate> {
+class LocalDate with ComparableMixin<LocalDate> implements Comparable<LocalDate> {
   final int year;
   /// month, 1..12
   final int month;
@@ -27,11 +29,6 @@ class LocalDate implements Comparable<LocalDate> {
               year == other.year &&
               month == other.month &&
               day == other.day;
-
-  bool operator >(LocalDate other) => compareTo(other) > 0;
-  bool operator >=(LocalDate other) => compareTo(other) >= 0;
-  bool operator <(LocalDate other) => compareTo(other) < 0;
-  bool operator <=(LocalDate other) => compareTo(other) <= 0;
 
   @override
   int get hashCode => year.hashCode ^ month.hashCode ^ day.hashCode;

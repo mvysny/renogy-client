@@ -31,7 +31,7 @@ extension CloseAndFlush on IOSink {
     try {
       await flush();
     } finally {
-      closeQuietly();
+      await closeQuietly();
     }
   }
 
@@ -42,4 +42,12 @@ extension CloseAndFlush on IOSink {
       Logger(runtimeType.toString()).warning("Failed to close $this", e, s);
     }
   }
+}
+
+mixin ComparableMixin<T> {
+  int compareTo(T other);
+  bool operator >(T other) => compareTo(other) > 0;
+  bool operator >=(T other) => compareTo(other) >= 0;
+  bool operator <(T other) => compareTo(other) < 0;
+  bool operator <=(T other) => compareTo(other) <= 0;
 }
