@@ -65,9 +65,9 @@ extension Hex on Uint8List {
 }
 
 Uint8List _hexToBytes(String hex) {
-  final result = <int>[];
+  final result = BytesBuilder(copy: false);
   for (int i = 0; i < hex.length; i += 2) {
-    result.add(int.parse(hex.substring(i, i + 2), radix: 16));
+    result.addByte(int.parse(hex.substring(i, i + 2), radix: 16));
   }
-  return Uint8List.fromList(result);
+  return result.toBytes();
 }
