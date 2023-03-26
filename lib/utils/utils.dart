@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:logging/logging.dart';
@@ -50,4 +51,9 @@ mixin ComparableMixin<T> {
   bool operator >=(T other) => compareTo(other) >= 0;
   bool operator <(T other) => compareTo(other) < 0;
   bool operator <=(T other) => compareTo(other) <= 0;
+}
+
+/// Blocks until Enter is pressed.
+Future waitForEnter() async {
+  return stdin.transform(utf8.decoder).transform(LineSplitter()).first;
 }

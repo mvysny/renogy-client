@@ -12,6 +12,8 @@ class DummyRenogyClient implements RenogyClient {
   /// max rated voltage of the solar panel array
   double maxSolarPanelAmperage = 5;
 
+  bool _closed = false;
+
   ///Adjustment percentage per hour-of-day, so that we generate 0% at midnight. Makes the
   /// dummy data more realistic.
   final _solarPanelGenerationPercentagePerHour = <double>[
@@ -41,6 +43,16 @@ class DummyRenogyClient implements RenogyClient {
     0
   ];
 
+  /// When the "device" was powered up (=when this class was created).
+  final _poweredOnAt = DateTime.now();
+  var _lastDailyStatsRetrievedAt = DateTime.now();
+  LocalDate? _lastDailyStatsRetrievedAtDay;
+  double _totalChargingBatteryAH = 0;
+  double _cumulativePowerGenerationWH = 0;
+  DailyStats? _lastDailyStats;
+  double _lastDailyStatsChargingAh = 0;
+  double _lastDailyStatsPowerGenerationWh = 0;
+
   @override
   SystemInfo getSystemInfo() => SystemInfo()
     ..maxVoltage = 24
@@ -51,16 +63,6 @@ class DummyRenogyClient implements RenogyClient {
     ..softwareVersion = "v1.2.3"
     ..hardwareVersion = "v4.5.6"
     ..serialNumber = "1501FFFF";
-
-  /// When the "device" was powered up (=when this class was created).
-  final _poweredOnAt = DateTime.now();
-  var _lastDailyStatsRetrievedAt = DateTime.now();
-  LocalDate? _lastDailyStatsRetrievedAtDay;
-  double _totalChargingBatteryAH = 0;
-  double _cumulativePowerGenerationWH = 0;
-  DailyStats? _lastDailyStats;
-  double _lastDailyStatsChargingAh = 0;
-  double _lastDailyStatsPowerGenerationWh = 0;
 
   DailyStats _getDailyStats() => _lastDailyStats!;
 
@@ -74,6 +76,7 @@ class DummyRenogyClient implements RenogyClient {
 
   @override
   RenogyData getAllData({SystemInfo? cachedSystemInfo}) {
+    if (_closed) throw StateError("Closed");
     final systemInfo = cachedSystemInfo ?? getSystemInfo();
     // always local date since we calculate the generation percentage off it.
     final now = DateTime.now();
@@ -122,7 +125,9 @@ class DummyRenogyClient implements RenogyClient {
   }
 
   @override
-  void close() {}
+  void close() {
+    _closed = true;
+  }
 
   /// Updates statistics. Now we can calculate [DailyStats] and [HistoricalData] correctly.
   ///

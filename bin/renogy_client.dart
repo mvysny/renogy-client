@@ -7,86 +7,74 @@ import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/closeable.dart';
+import 'package:renogy_client/utils/utils.dart';
 
-void main(List<String> arguments) {
+void main(List<String> arguments) async {
   final args = Args.parse(arguments);
 
   final RenogyClient client = DummyRenogyClient();
-  if (args.printStatusOnly) {
-    try {
+  try {
+    if (args.printStatusOnly) {
       final RenogyData allData = client.getAllData();
       print(allData.toJsonString());
-    } finally {
-      client.closeQuietly();
+    } else {
+      await _mainLoop(client, args);
     }
-  } else {
-    try {
-      _mainLoop(client, args);
-    } on Exception {
-      client.closeQuietly();
-      rethrow;
-    }
+  } finally {
+    client.closeQuietly();
+    _log.fine("Closed $client");
   }
 }
 
 final _log = Logger.root;
 
-void _mainLoop(RenogyClient client, Args args) {
+Future _mainLoop(RenogyClient client, Args args) async {
   _log.info("Accessing solar controller via $client");
   final systemInfo = client.getSystemInfo();
   _log.info("Solar Controller: $systemInfo");
   final dataLogger = args.newDataLogger();
   try {
-    _log.info("Polling the solar controller every ${args
-        .pollInterval} seconds; writing status to ${args
-        .statusFile}, appending data to $dataLogger");
-    _log.info("Press CTRL+C or send SIGTERM to end the program\n");
+    _log.info("Polling the solar controller every ${args.pollInterval} seconds; writing status to ${args.statusFile}, appending data to $dataLogger");
 
     dataLogger.init();
     dataLogger.deleteRecordsOlderThan(args.pruneLog);
 
     final cron = Cron();
-    cron.schedule(Schedule(seconds: 0, minutes: 0, hours: 0), () {
-      try {
-        dataLogger.deleteRecordsOlderThan(args.pruneLog);
-      } on Exception catch (e, t) {
-        _log.severe("Failed to prune old records", e, t);
+    try {
+      cron.schedule(Schedule.parse("0 0 0 * * *"), () {
+        try {
+          dataLogger.deleteRecordsOlderThan(args.pruneLog);
+        } catch (e, t) {
+          _log.severe("Failed to prune old records", e, t);
+        }
+      });
+      looprun(Timer? t) {
+        try {
+          _log.fine("Getting all data from $client");
+          final RenogyData allData = client.getAllData(
+              cachedSystemInfo: systemInfo);
+          _log.fine("Writing data to ${args.statusFile}");
+          args.statusFile.writeAsStringSync(allData.toJsonString());
+          dataLogger.append(allData);
+          _log.fine("Main loop: done");
+        } on Exception catch (e, s) {
+          // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
+          _log.warning("Main loop failure", e, s);
+        }
       }
-    });
-    looprun(Timer? t) {
+      looprun(null);
+      final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
       try {
-        _log.fine("Getting all data from $client");
-        final RenogyData allData = client.getAllData(
-            cachedSystemInfo: systemInfo);
-        _log.fine("Writing data to ${args.statusFile}");
-        args.statusFile.writeAsStringSync(allData.toJsonString());
-        dataLogger.append(allData);
-        _log.fine("Main loop: done");
-      } on Exception catch (e, s) {
-        // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
-        _log.warning("Main loop failure", e, s);
+        _log.info("Press ENTER to end the program\n");
+        await waitForEnter();
+      } finally {
+        _log.fine("Shutting down");
+        t.cancel();
       }
-    }
-    looprun(null);
-
-    final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
-    terminate(ProcessSignal signal) async {
-      _log.fine("Shutting down");
+    } finally {
       await cron.close();
-      t.cancel();
-      dataLogger.closeQuietly();
-      client.closeQuietly();
-      _log.fine("Closed $client");
-      exit(0);
     }
-
-    ProcessSignal.sigint.watch().listen(terminate); // CTRL+C
-    ProcessSignal.sigterm.watch().listen(terminate); // we're killed by someone
-    // the function may now terminate (and main() along with it): the Timer+Event Queue
-    // will keep the process alive. The terminate() function will be called on CTRL+C,
-    // canceling the timer, closing everything and calling exit(0).
-  } on Exception {
+  } finally {
     dataLogger.closeQuietly();
-    rethrow;
   }
 }
