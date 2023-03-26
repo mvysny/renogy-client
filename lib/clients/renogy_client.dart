@@ -342,7 +342,7 @@ class RenogyException implements Exception {
   RenogyException(this.message, { this.code });
 
   @override
-  String toString() => "RenogyException: $code $message";
+  String toString() => "RenogyException: $message";
 
   static RenogyException fromCode(int code) {
     String message = "Unknown";
@@ -353,7 +353,7 @@ class RenogyException implements Exception {
       case 4: message = "Client fails to read or write register"; break;
       case 5: message = "Data check code sent by server is not correct"; break;
     }
-    return RenogyException(message, code: code);
+    return RenogyException("0x${code.toRadixString(16).padLeft(2, '0')}: $message", code: code);
   }
 }
 
