@@ -1,24 +1,51 @@
 import 'package:renogy_client/clients/renogy_client.dart';
 
 final dummySystemInfo = SystemInfo()
-..maxVoltage = 24
-..ratedChargingCurrent = 40
-..ratedDischargingCurrent = 40
-..productType = ProductType.Controller
-..productModel = "RENOGY ROVER"
-    ..softwareVersion="v1.2.3"
-        ..hardwareVersion="v4.5.6"
-..serialNumber="1501FFFF";
+  ..maxVoltage = 24
+  ..ratedChargingCurrent = 40
+  ..ratedDischargingCurrent = 40
+  ..productType = ProductType.Controller
+  ..productModel = "RENOGY ROVER"
+  ..softwareVersion = "v1.2.3"
+  ..hardwareVersion = "v4.5.6"
+  ..serialNumber = "1501FFFF";
 
-val dummyPowerStatus = PowerStatus(100.toUShort(), 25.6f, 2.3f, 23, 23, 0f, 0f, 0.toUShort(), 60.2f, 4.2f, (60.2f * 4.2f).toInt().toUShort())
-val dummyDailyStats = DailyStats(25.0f, 28.0f, 10.0f, 10.0f, 240.toUShort(), 240.toUShort(), 100.toUShort(), 100.toUShort(), 0.toUShort(), 0.toUShort())
-val dummyHistoricalData = HistoricalData(20.toUShort(), 1.toUShort(), 20.toUShort(), 2000.toUInt(), 2000.toUInt(), 2000.toUInt(), 2000.toUInt())
-val dummyStatus = RenogyStatus(false, 0.toUByte(), ChargingState.MpptChargingMode, setOf(
-    ControllerFaults.ControllerTemperatureTooHigh))
-val dummyRenogyData = RenogyData(
-    dummySystemInfo,
-    dummyPowerStatus,
-    dummyDailyStats,
-    dummyHistoricalData,
-    dummyStatus
-)
+final dummyPowerStatus = PowerStatus()
+  ..batterySOC = 100
+  ..batteryVoltage = 25.6
+  ..chargingCurrentToBattery = 2.3
+  ..batteryTemp = 23
+  ..controllerTemp = 23
+  ..solarPanelVoltage = 60.2
+  ..solarPanelCurrent = 4.2
+  ..solarPanelPower = (60.2 * 4.2).toInt();
+
+final dummyDailyStats = DailyStats()
+  ..batteryMinVoltage = 25.0
+  ..batteryMaxVoltage = 28.0
+  ..maxChargingCurrent = 10.0
+  ..maxDischargingCurrent = 10.0
+  ..maxChargingPower = 240
+  ..maxDischargingPower = 240
+  ..chargingAh = 100
+  ..dischargingAh = 100;
+
+final dummyHistoricalData = HistoricalData()
+  ..daysUp = 20
+  ..batteryOverDischargeCount = 1
+  ..batteryFullChargeCount = 20
+  ..totalChargingBatteryAH = 2000
+  ..totalDischargingBatteryAH = 2000
+  ..cumulativePowerGenerationWH = 2000
+  ..cumulativePowerConsumptionWH = 2000;
+
+final dummyStatus = RenogyStatus()
+  ..chargingState = ChargingState.MpptChargingMode
+  ..faults = {ControllerFaults.ControllerTemperatureTooHigh};
+
+final dummyRenogyData = RenogyData()
+  ..systemInfo = dummySystemInfo
+  ..powerStatus = dummyPowerStatus
+  ..dailyStats = dummyDailyStats
+  ..historicalData = dummyHistoricalData
+  ..status = dummyStatus;
