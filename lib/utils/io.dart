@@ -4,7 +4,7 @@ import 'package:libserialport/libserialport.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/utils/closeable.dart';
 
-/// An IO pipe supporting most basic operations.
+/// An IO pipe supporting most basic operations. Synchronous.
 abstract class IO implements Closeable {
   /// Read data from the serial port.
   ///

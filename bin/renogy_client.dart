@@ -35,27 +35,27 @@ Future _mainLoop(RenogyClient client, Args args) async {
   final dataLogger = args.newDataLogger();
   try {
     _log.info("Polling the solar controller every ${args.pollInterval} seconds; writing status to ${args.statusFile}, appending data to $dataLogger");
+    _log.info("Press ENTER to end the program\n");
 
-    dataLogger.init();
-    dataLogger.deleteRecordsOlderThan(args.pruneLog);
+    await dataLogger.init();
+    await dataLogger.deleteRecordsOlderThan(args.pruneLog);
 
     final cron = Cron();
     try {
-      cron.schedule(Schedule.parse("0 0 0 * * *"), () {
+      cron.schedule(Schedule.parse("0 0 0 * * *"), () async {
         try {
-          dataLogger.deleteRecordsOlderThan(args.pruneLog);
+          await dataLogger.deleteRecordsOlderThan(args.pruneLog);
         } catch (e, t) {
           _log.severe("Failed to prune old records", e, t);
         }
       });
-      looprun(Timer? t) {
+      looprun(Timer? t) async {
         try {
           _log.fine("Getting all data from $client");
-          final RenogyData allData = client.getAllData(
-              cachedSystemInfo: systemInfo);
+          final RenogyData allData = client.getAllData(cachedSystemInfo: systemInfo);
           _log.fine("Writing data to ${args.statusFile}");
-          args.statusFile.writeAsStringSync(allData.toJsonString());
-          dataLogger.append(allData);
+          await args.statusFile.writeAsString(allData.toJsonString());
+          await dataLogger.append(allData);
           _log.fine("Main loop: done");
         } on Exception catch (e, s) {
           // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
@@ -65,7 +65,6 @@ Future _mainLoop(RenogyClient client, Args args) async {
       looprun(null);
       final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
       try {
-        _log.info("Press ENTER to end the program\n");
         await waitForEnter();
       } finally {
         _log.fine("Shutting down");
@@ -75,6 +74,6 @@ Future _mainLoop(RenogyClient client, Args args) async {
       await cron.close();
     }
   } finally {
-    dataLogger.closeQuietly();
+    await dataLogger.closeQuietly();
   }
 }

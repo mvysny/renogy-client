@@ -8,15 +8,15 @@ import 'package:renogy_client/utils/closeable.dart';
 import 'package:renogy_client/utils/utils.dart';
 
 /// Logs [RenogyData] somewhere.
-abstract class DataLogger extends Closeable {
+abstract class DataLogger extends AsyncCloseable {
   /// Initializes the logger; e.g. makes sure the CSV file exists and creates one with a header if it doesn't.
-  void init();
+  Future init();
 
   /// Appends [data] to the logger.
-  void append(RenogyData data);
+  Future append(RenogyData data);
 
   /// Deletes all records older than given number of [days].
-  void deleteRecordsOlderThan(int days);
+  Future deleteRecordsOlderThan(int days);
 }
 
 /// Aggregates multiple [DataLogger]s. Add them to [dataLoggers] before calling [init].
@@ -24,35 +24,27 @@ class CompositeDataLogger implements DataLogger {
   final dataLoggers = <DataLogger>[];
 
   @override
-  void append(RenogyData data) {
-    for (var dataLogger in dataLoggers) {
-      dataLogger.append(data);
-    }
+  Future append(RenogyData data) async {
+    await Future.wait(dataLoggers.map((e) => e.append(data)));
   }
 
   @override
-  void close() {
-    for (var it in dataLoggers) {
-      it.closeQuietly();
-    }
+  Future close() async {
+    await Future.wait(dataLoggers.map((e) => e.closeQuietly()));
     _log.fine("Closed $dataLoggers");
     dataLoggers.clear();
   }
 
   @override
-  void deleteRecordsOlderThan(int days) {
+  Future deleteRecordsOlderThan(int days) async {
     _log.info("Deleting old records");
-    for (var dataLogger in dataLoggers) {
-      dataLogger.deleteRecordsOlderThan(days);
-    }
+    await Future.wait(dataLoggers.map((e) => e.deleteRecordsOlderThan(days)));
     _log.info("Successfully deleted old records");
   }
 
   @override
-  void init() {
-    for (var dataLogger in dataLoggers) {
-      dataLogger.init();
-    }
+  Future init() async {
+    await Future.wait(dataLoggers.map((e) => e.init()));
   }
   static final _log = Logger((CompositeDataLogger).toString());
 
@@ -66,18 +58,18 @@ class StdoutDataLogger implements DataLogger {
   StdoutDataLogger(bool utc) : _csv = _CsvRenogyWriter(stdout, utc);
 
   @override
-  void init() {
+  Future init() async {
     _csv.writeHeader();
   }
 
   @override
-  void deleteRecordsOlderThan(int days) {}
+  Future deleteRecordsOlderThan(int days) async {}
 
   @override
-  void close() {}
+  Future close() async {}
 
   @override
-  void append(RenogyData data) {
+  Future append(RenogyData data) async {
     _csv.writeLine(data);
   }
 
@@ -163,7 +155,7 @@ class CSVDataLogger implements DataLogger {
   CSVDataLogger(this.file, this.utc);
 
   @override
-  void init() {
+  Future init() async {
     if (file.existsSync()) {
       _ioSink = file.openWrite(mode: FileMode.writeOnlyAppend);
       _csv = _CsvRenogyWriter(_ioSink, utc);
@@ -175,17 +167,16 @@ class CSVDataLogger implements DataLogger {
   }
 
   @override
-  void deleteRecordsOlderThan(int days) {}
+  Future deleteRecordsOlderThan(int days) async {}
 
   @override
   Future close() async {
-    await _ioSink.closeQuietly();
+    await _ioSink.flushAndClose();
   }
 
   @override
-  void append(RenogyData data) async {
+  Future append(RenogyData data) async {
     _csv.writeLine(data);
-    await _ioSink.flush();
   }
 
   @override
