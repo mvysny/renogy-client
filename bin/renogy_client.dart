@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cron/cron.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/closeable.dart';
-import 'package:renogy_client/utils/time_utils.dart';
 
 void main(List<String> arguments) {
   final args = Args.parse(arguments);
@@ -45,7 +45,14 @@ void _mainLoop(RenogyClient client, Args args) {
     dataLogger.init();
     dataLogger.deleteRecordsOlderThan(args.pruneLog);
 
-    final midnightAlarm = MidnightAlarm(() { dataLogger.deleteRecordsOlderThan(args.pruneLog); });
+    final cron = Cron();
+    cron.schedule(Schedule(seconds: 0, minutes: 0, hours: 0), () {
+      try {
+        dataLogger.deleteRecordsOlderThan(args.pruneLog);
+      } on Exception catch (e, t) {
+        _log.severe("Failed to prune old records", e, t);
+      }
+    });
     looprun(Timer? t) {
       try {
         _log.fine("Getting all data from $client");
@@ -54,7 +61,6 @@ void _mainLoop(RenogyClient client, Args args) {
         _log.fine("Writing data to ${args.statusFile}");
         args.statusFile.writeAsStringSync(allData.toJsonString());
         dataLogger.append(allData);
-        midnightAlarm.tick();
         _log.fine("Main loop: done");
       } on Exception catch (e, s) {
         // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
@@ -64,8 +70,9 @@ void _mainLoop(RenogyClient client, Args args) {
     looprun(null);
 
     final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
-    terminate(ProcessSignal signal) {
+    terminate(ProcessSignal signal) async {
       _log.fine("Shutting down");
+      await cron.close();
       t.cancel();
       dataLogger.closeQuietly();
       client.closeQuietly();

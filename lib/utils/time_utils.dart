@@ -93,24 +93,3 @@ extension DateTimeExtensions on DateTime {
   /// Returns the date part.
   LocalDate getLocalDate() => LocalDate.from(this);
 }
-
-/// Calls [onMidnight] at midnight, once per day.
-class MidnightAlarm {
-  final Function() onMidnight;
-  var _today = LocalDate.today();
-
-  MidnightAlarm(this.onMidnight);
-
-  /// Call periodically. [onMidnight] will be called when midnight is crossed.
-  ///
-  /// Returns true if we just crossed midnight.
-  bool tick() {
-    final today2 = LocalDate.today();
-    if (today2 != _today) {
-      _today = today2;
-      onMidnight();
-      return true;
-    }
-    return false;
-  }
-}
