@@ -45,14 +45,6 @@ extension CloseAndFlush on IOSink {
   }
 }
 
-mixin ComparableMixin<T> {
-  int compareTo(T other);
-  bool operator >(T other) => compareTo(other) > 0;
-  bool operator >=(T other) => compareTo(other) >= 0;
-  bool operator <(T other) => compareTo(other) < 0;
-  bool operator <=(T other) => compareTo(other) <= 0;
-}
-
 /// Blocks until Enter is pressed.
 Future waitForEnter() async {
   await stdin.transform(utf8.decoder).transform(LineSplitter()).first;

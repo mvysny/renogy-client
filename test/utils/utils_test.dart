@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:renogy_client/clients/dummy_renogy_client.dart';
-import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/modbus_crc.dart';
 import 'package:renogy_client/utils/time_utils.dart';
 import 'package:test/test.dart';
@@ -37,18 +34,6 @@ void main() {
     });
     test('compare', () {
       expect(true, LocalDate(2022, 1, 1) > LocalDate(1995, 12, 25));
-    });
-  });
-  group('LocalTime', () {
-    test('toString()', () {
-      expect('00:00:00', LocalTime.midnight.toString());
-      expect('22:12:02', LocalTime(22, 12, 2).toString());
-    });
-    test('today()', () {
-      LocalTime.now();
-    });
-    test('compare', () {
-      expect(true, LocalTime(2, 1, 1) > LocalTime(1, 12, 25));
     });
   });
 }
