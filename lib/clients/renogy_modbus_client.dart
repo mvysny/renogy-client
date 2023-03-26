@@ -1,6 +1,7 @@
 
 import 'dart:typed_data';
 
+import 'package:logging/logging.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/io.dart';
 import 'package:renogy_client/utils/modbus_crc.dart';
@@ -72,4 +73,28 @@ class RenogyModbusClient {
 
   @override
   String toString() => 'RenogyModbusClient{deviceAddress: $deviceAddress}';
+
+  /// Returns the daily statistics.
+  DailyStats getDailyStats() {
+    _log.fine("getting daily stats");
+    final Uint8List register = readRegister(0x010B, 20);
+    final ByteData result = ByteData.sublistView(register);
+    final stats = DailyStats();
+    stats.batteryMinVoltage = result.getUint16(0) / 10;
+    stats.batteryMaxVoltage = result.getUint16(2) / 10;
+    stats.maxChargingCurrent = result.getUint16(4) / 100;
+    stats.maxDischargingCurrent = result.getUint16(6) / 100;
+    stats.maxChargingPower = result.getUint16(8);
+    stats.maxDischargingPower = result.getUint16(10);
+    stats.chargingAh = result.getUint16(12);
+    stats.dischargingAh = result.getUint16(14);
+    // The manual says kWh/10000, however that value does not correspond to chargingAmpHours: chargingAmpHours=2 but this value is 5 for 24V system.
+    // The example in manual says kWh which would simply be too much.
+    // I'll make an educated guess here: it's Wh.
+    stats.powerGenerationWh = result.getUint16(16);
+    stats.powerConsumptionWh = result.getUint16(18);
+    return stats;
+  }
+
+  static final _log = Logger((RenogyModbusClient).toString());
 }

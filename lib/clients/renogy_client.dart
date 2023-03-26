@@ -223,6 +223,35 @@ class DailyStats {
   @override
   String toString() =>
       "DailyStats(batteryMinVoltage=$batteryMinVoltage V, batteryMaxVoltage=$batteryMaxVoltage V, maxChargingCurrent=$maxChargingCurrent A, maxDischargingCurrent=$maxDischargingCurrent A, maxChargingPower=$maxChargingPower W, maxDischargingPower=$maxDischargingPower W, chargingAmpHours=$chargingAh AH, dischargingAmpHours=$dischargingAh AH, powerGeneration=$powerGenerationWh WH, powerConsumption=$powerConsumptionWh WH)";
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DailyStats &&
+          runtimeType == other.runtimeType &&
+          batteryMinVoltage == other.batteryMinVoltage &&
+          batteryMaxVoltage == other.batteryMaxVoltage &&
+          maxChargingCurrent == other.maxChargingCurrent &&
+          maxDischargingCurrent == other.maxDischargingCurrent &&
+          maxChargingPower == other.maxChargingPower &&
+          maxDischargingPower == other.maxDischargingPower &&
+          chargingAh == other.chargingAh &&
+          dischargingAh == other.dischargingAh &&
+          powerGenerationWh == other.powerGenerationWh &&
+          powerConsumptionWh == other.powerConsumptionWh;
+
+  @override
+  int get hashCode =>
+      batteryMinVoltage.hashCode ^
+      batteryMaxVoltage.hashCode ^
+      maxChargingCurrent.hashCode ^
+      maxDischargingCurrent.hashCode ^
+      maxChargingPower.hashCode ^
+      maxDischargingPower.hashCode ^
+      chargingAh.hashCode ^
+      dischargingAh.hashCode ^
+      powerGenerationWh.hashCode ^
+      powerConsumptionWh.hashCode;
 }
 
 class PowerStatus {
