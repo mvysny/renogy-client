@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:intl/intl.dart';
+import 'package:libserialport/libserialport.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/data_logger.dart';
 import 'package:renogy_client/utils/utils.dart';
@@ -59,6 +60,7 @@ class Args {
     ..addOption('statusfile', help: 'overwrites status to given file', defaultsTo: 'status.json')
     ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data', defaultsTo: '10')
     ..addOption('prunelog', help: 'prunes log entries older than x days', defaultsTo: '365')
+    ..addFlag('list-serial-ports', help: 'lists all available serial ports and quits', negatable: false)
     ..addFlag('verbose', help: 'Print verbosely what I\'m doing', negatable: false);
 
   /// Prints help and stops the program.
@@ -76,6 +78,10 @@ class Args {
     try {
       final ArgResults ar = _argParser.parse(args);
 
+      if (ar['list-serial-ports'] as bool) {
+        print('Available serial ports: ${SerialPort.availablePorts}');
+        exit(0);
+      }
       if (ar.rest.length != 1) throw ArgParserException("Please supply one serial device");
       final pollInterval = int.tryParse(ar['pollinterval']);
       if (pollInterval == null) throw ArgParserException("pollinterval: not a number");
