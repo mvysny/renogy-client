@@ -19,9 +19,6 @@ class Args {
   /// If not null, appends status to this CSV file. Disables stdout status logging.
   final File? csv;
 
-  /// If not null, appends status to a sqlite database. Disables stdout status logging.
-  final File? sqlite;
-
   /// If not null, appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. `postgresql://user:pass@localhost:5432/postgres`
   final String? postgres;
 
@@ -42,7 +39,6 @@ class Args {
       this.printStatusOnly,
       this.utc,
       this.csv,
-      this.sqlite,
       this.postgres,
       this.statusFile,
       this.pollInterval,
@@ -93,7 +89,6 @@ class Args {
           ar['status'] as bool,
           ar['utc'] as bool,
           _toFile(ar['csv']),
-          _toFile(ar['sqlite']),
           ar['postgres'],
           _toFile(ar['statusfile'])!,
           pollInterval,
@@ -128,7 +123,7 @@ class Args {
 
   @override
   String toString() {
-    return 'Args{device: $device, printStatusOnly: $printStatusOnly, utc: $utc, csv: $csv, sqlite: $sqlite, postgres: $postgres, stateFile: $statusFile, pollInterval: $pollInterval, pruneLog: $pruneLog, verbose: $verbose}';
+    return 'Args{device: $device, printStatusOnly: $printStatusOnly, utc: $utc, csv: $csv, postgres: $postgres, stateFile: $statusFile, pollInterval: $pollInterval, pruneLog: $pruneLog, verbose: $verbose}';
   }
 
   /// Creates and returns the data logger. Don't forget to call [DataLogger.init].

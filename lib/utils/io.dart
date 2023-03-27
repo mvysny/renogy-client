@@ -32,7 +32,7 @@ extension FullyIO on IO {
     var current = 0;
     while (current < bytes.length) {
       var bytesWritten = write(bytes.sublist(current), timeout: 0);
-      if (bytesWritten <= 0) throw StateError("write returned $bytesWritten");
+      if (bytesWritten != bytes.length) throw StateError("write returned $bytesWritten");
       current += bytesWritten;
     }
   }
@@ -52,6 +52,19 @@ class SerialPortIO implements IO {
   final SerialPort _serialPort;
   SerialPortIO(this._serialPort);
 
+  void configure() {
+    final SerialPortConfig config = _serialPort.config;
+    config.parity = SerialPortParity.none;
+    config.stopBits = 0;
+    config.bits = 8;
+    config.cts = SerialPortCts.ignore;
+    config.rts = SerialPortRts.off;
+    config.xonXoff = SerialPortXonXoff.disabled;
+    config.baudRate = 9600;
+    config.setFlowControl(SerialPortFlowControl.none);
+    _serialPort.config = config;
+  }
+
   @override
   void close() {
     if (!_serialPort.close()) {
@@ -66,7 +79,9 @@ class SerialPortIO implements IO {
 
   @override
   int write(Uint8List bytes, {int timeout = -1}) {
-    return _serialPort.write(bytes, timeout: timeout);
+    var result = _serialPort.write(bytes, timeout: timeout);
+    _serialPort.drain();
+    return result;
   }
 
   static final Logger _log = Logger((SerialPortIO).toString());

@@ -1,34 +1,52 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cron/cron.dart';
+import 'package:libserialport/libserialport.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
+import 'package:renogy_client/clients/fix_daily_stats_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
+import 'package:renogy_client/clients/renogy_modbus_client.dart';
 import 'package:renogy_client/utils/closeable.dart';
+import 'package:renogy_client/utils/io.dart';
 import 'package:renogy_client/utils/utils.dart';
 
 void main(List<String> arguments) async {
   final args = Args.parse(arguments);
 
-  final RenogyClient client = DummyRenogyClient();
+  final SerialPortIO? io = args.isDummy ? null : SerialPortIO(SerialPort(args.device.path));
   try {
-    if (args.printStatusOnly) {
-      final RenogyData allData = client.getAllData();
-      print(allData.toJsonString());
-    } else {
-      await _mainLoop(client, args);
+    io?.configure();
+    final cron = Cron();
+    try {
+      final RenogyClient client = io == null
+          ? DummyRenogyClient()
+          : FixDailyStatsClient(RenogyModbusClient(io), cron);
+      try {
+        if (args.printStatusOnly) {
+          final RenogyData allData = client.getAllData();
+          print(allData.toJsonString());
+        } else {
+          await _mainLoop(client, args, cron);
+        }
+      } finally {
+        client.closeQuietly();
+        _log.fine("Closed $client");
+      }
+    } finally {
+      await cron.close();
+      _log.fine("Closed internal cron");
     }
   } finally {
-    client.closeQuietly();
-    _log.fine("Closed $client");
+    io?.closeQuietly();
+    _log.fine("Closed $io");
   }
 }
 
 final _log = Logger.root;
 
-Future<void> _mainLoop(RenogyClient client, Args args) async {
+Future<void> _mainLoop(RenogyClient client, Args args, Cron cron) async {
   _log.info("Accessing solar controller via $client");
   final systemInfo = client.getSystemInfo();
   _log.info("Solar Controller: $systemInfo");
@@ -40,38 +58,35 @@ Future<void> _mainLoop(RenogyClient client, Args args) async {
     await dataLogger.init();
     await dataLogger.deleteRecordsOlderThan(args.pruneLog);
 
-    final cron = Cron();
-    try {
-      cron.schedule(scheduleMidnight, () async {
-        try {
-          await dataLogger.deleteRecordsOlderThan(args.pruneLog);
-        } catch (e, t) {
-          _log.severe("Failed to prune old records", e, t);
-        }
-      });
-      looprun(Timer? t) async {
-        try {
-          _log.fine("Getting all data from $client");
-          final RenogyData allData = client.getAllData(cachedSystemInfo: systemInfo);
-          _log.fine("Writing data to ${args.statusFile}");
-          await args.statusFile.writeAsString(allData.toJsonString());
-          await dataLogger.append(allData);
-          _log.fine("Main loop: done");
-        } on Exception catch (e, s) {
-          // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
-          _log.warning("Main loop failure", e, s);
-        }
-      }
-      looprun(null);
-      final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
+    cron.schedule(scheduleMidnight, () async {
       try {
-        await waitForEnter();
-      } finally {
-        _log.fine("Shutting down");
-        t.cancel();
+        await dataLogger.deleteRecordsOlderThan(args.pruneLog);
+      } catch (e, t) {
+        _log.severe("Failed to prune old records", e, t);
       }
+    });
+    looprun(Timer? t) async {
+      try {
+        _log.fine("Getting all data from $client");
+        final RenogyData allData =
+            client.getAllData(cachedSystemInfo: systemInfo);
+        _log.fine("Writing data to ${args.statusFile}");
+        await args.statusFile.writeAsString(allData.toJsonString());
+        await dataLogger.append(allData);
+        _log.fine("Main loop: done");
+      } on Exception catch (e, s) {
+        // don't crash on exception; print it out and continue. The KeepOpenClient will recover for serialport errors.
+        _log.warning("Main loop failure", e, s);
+      }
+    }
+
+    looprun(null);
+    final t = Timer.periodic(Duration(seconds: args.pollInterval), looprun);
+    try {
+      await waitForEnter();
     } finally {
-      await cron.close();
+      _log.fine("Shutting down");
+      t.cancel();
     }
   } finally {
     await dataLogger.closeQuietly();
