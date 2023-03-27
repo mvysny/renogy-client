@@ -1,6 +1,9 @@
 
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
+import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/io.dart';
@@ -74,6 +77,37 @@ class RenogyModbusClient {
 
   @override
   String toString() => 'RenogyModbusClient{deviceAddress: $deviceAddress}';
+
+  /// Retrieves the [SystemInfo] from the device.
+  @override
+  SystemInfo getSystemInfo() {
+    _log.fine("getting system info");
+    final result = SystemInfo();
+    var register = readRegister(0x0A, 4);
+    var data = ByteData.sublistView(register);
+    result.maxVoltage = data.getUint8(0);
+    result.ratedChargingCurrent = data.getUint8(1);
+    result.ratedDischargingCurrent = data.getUint8(2);
+    final productTypeNum = data.getUint8(3);
+    result.productType = ProductType.values
+        .firstWhereOrNull((e) => e.modbusValue == productTypeNum);
+
+    register = readRegister(0x0C, 16);
+    result.productModel = ascii.decode(register.toList()).trim();
+
+    // software version/hardware version
+    register = readRegister(0x0014, 8);
+    data = ByteData.sublistView(register);
+    result.softwareVersion =
+        "V${data.getUint8(1)}.${data.getUint8(2)}.${data.getUint8(3)}";
+    result.hardwareVersion =
+        "V${data.getUint8(5)}.${data.getUint8(6)}.${data.getUint8(7)}";
+
+    // serial number
+    register = readRegister(0x0018, 4);
+    result.serialNumber = HEX.encode(register.toList());
+    return result;
+  }
 
   /// Returns the daily statistics.
   DailyStats getDailyStats() {

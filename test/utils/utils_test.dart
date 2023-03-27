@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:renogy_client/utils/modbus_crc.dart';
@@ -35,5 +36,9 @@ void main() {
     test('compare', () {
       expect(true, LocalDate(2022, 1, 1) > LocalDate(1995, 12, 25));
     });
+  });
+  test('decodeAscii', () {
+    expect("    MT4830      ", ascii.decode([0x20, 0x20, 0x20, 0x20, 0x4D, 0x54, 0x34, 0x38, 0x33, 0x30, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20]));
+    expect("", ascii.decode([]));
   });
 }

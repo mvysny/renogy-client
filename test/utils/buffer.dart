@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:hex/hex.dart';
 import 'package:renogy_client/utils/io.dart';
 import 'package:test/expect.dart';
 
@@ -49,25 +50,13 @@ class Buffer implements IO {
 
   @override
   String toString() =>
-      "Buffer(written=${writtenBytes.toBytes().toHex()}, toReturn=${toReturn.toBytes().toHex()}, readPointer=$readPointer)";
+      "Buffer(written=${HEX.encode(writtenBytes.toBytes().toList())}, toReturn=${HEX.encode(toReturn.toBytes().toList())}, readPointer=$readPointer)";
 
   void expectWrittenBytes(String hexBytes) {
-    expect(hexBytes, writtenBytes.toBytes().toHex());
+    expect(hexBytes, HEX.encode(writtenBytes.toBytes().toList()));
   }
 
   void toReturnAdd(String hex) {
-    toReturn.add(_hexToBytes(hex).toList());
+    toReturn.add(HEX.decode(hex));
   }
-}
-
-extension Hex on Uint8List {
-  String toHex() => map((e) => e.toRadixString(16).padLeft(2, '0')).join();
-}
-
-Uint8List _hexToBytes(String hex) {
-  final result = BytesBuilder(copy: false);
-  for (int i = 0; i < hex.length; i += 2) {
-    result.addByte(int.parse(hex.substring(i, i + 2), radix: 16));
-  }
-  return result.toBytes();
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:hex/hex.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/clients/renogy_modbus_client.dart';
@@ -46,7 +47,7 @@ void main() {
       final client = RenogyModbusClient(buffer);
       final Uint8List response = client.readRegister(0x0A, 0x02);
       buffer.expectWrittenBytes("0103000a0001a408");
-      expect("181e", response.toHex());
+      expect("181e", HEX.encode(response.toList()));
     });
     test('readRegister000AErrorResponse', () {
       final buffer = Buffer();
@@ -67,7 +68,7 @@ void main() {
       final client = RenogyModbusClient(buffer);
       final response = client.readRegister(0x0C, 16);
       buffer.expectWrittenBytes("0103000c0008840f");
-      expect("202020204d5434383330202020202020", response.toHex());
+      expect("202020204d5434383330202020202020", HEX.encode(response.toList()));
     });
     test('testReadDailyStats', () {
       final buffer = Buffer();
