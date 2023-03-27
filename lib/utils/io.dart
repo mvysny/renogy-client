@@ -53,6 +53,7 @@ class SerialPortIO implements IO {
   SerialPortIO(this._serialPort);
 
   void configure() {
+    _serialPort.openReadWrite();
     final SerialPortConfig config = _serialPort.config;
     config.parity = SerialPortParity.none;
     config.stopBits = 0;
