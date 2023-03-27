@@ -79,11 +79,8 @@ class _DontTrustRenogyPeriod implements _DailyStatsStrategy {
   @override
   void process(RenogyData data) {
     myDailyStats.update(data.powerStatus);
+    myDailyStats.applyTo(data.dailyStats);
     data.dailyStats
-      ..batteryMinVoltage = myDailyStats.batteryMinVoltage
-      ..batteryMaxVoltage = myDailyStats.batteryMaxVoltage
-      ..maxChargingCurrent = myDailyStats.maxChargingCurrent
-      ..maxChargingPower = myDailyStats.maxChargingPower
       ..chargingAh = 0
       ..powerGenerationWh -= powerGenerationAtMidnight;
   }
@@ -111,5 +108,13 @@ class _MyDailyStats {
     maxChargingCurrent =
         max(maxChargingCurrent, powerStatus.chargingCurrentToBattery);
     maxChargingPower = max(maxChargingPower, powerStatus.solarPanelPower);
+  }
+
+  void applyTo(DailyStats dailyStats) {
+    dailyStats
+      ..batteryMinVoltage = batteryMinVoltage
+      ..batteryMaxVoltage = batteryMaxVoltage
+      ..maxChargingCurrent = maxChargingCurrent
+      ..maxChargingPower = maxChargingPower;
   }
 }
