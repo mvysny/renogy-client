@@ -159,7 +159,7 @@ class RenogyModbusClient {
   /// Returns the historical data summary.
   HistoricalData getHistoricalData() {
     _log.fine("getting historical data");
-    final register = readRegister(0x0115.toUShort(), 22.toUShort());
+    final register = readRegister(0x0115, 22);
     final data = ByteData.sublistView(register);
     final result = HistoricalData();
 
