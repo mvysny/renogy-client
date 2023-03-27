@@ -32,7 +32,6 @@ Options:
     --status -> print the Renogy Rover status as JSON to stdout and quit 
     --utc -> CSV: dump date in UTC instead of local, handy for Grafana 
     --csv -> appends status to a CSV file, disables stdout status logging { String }
-    --sqlite -> appends status to a sqlite database, disables stdout status logging { String }
     --postgres -> appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. postgresql://user:pass@localhost:5432/postgres { String }
     --statefile -> overwrites status to file other than the default 'status.json' { String }
     --pollinterval, -i -> in seconds: how frequently to poll the controller for data, defaults to 10 { Int }
@@ -48,15 +47,10 @@ read below on how to compile the project from sources.
 
 # Running
 
-Example which will log dummy data periodically into the sqlite database:
+Example which will log dummy data periodically into a CSV file:
 
 ```bash
-$ ./renogy-client.exe --sqlite log.db dummy
-```
-
-To see the data, simply run
-```bash
-$ sqlite3 log.db "select * from log"
+$ ./renogy-client.exe --csv log.csv dummy
 ```
 
 To connect to an actual device, pass in the device file name of tty connected to the Renogy, e.g.
@@ -68,12 +62,11 @@ $ ./renogy-client.exe /dev/ttyUSB0 --status
 That will cause the app will only print status and quit. To continuously poll the device for data, run
 
 ```bash
-$ ./renogy-client.exe --sqlite log.db /dev/ttyUSB0
+$ ./renogy-client.exe --csv log.csv /dev/ttyUSB0
 ```
 
 The program will overwrite `status.json` file with the new data polled from the device;
-the program will also start appending the information to a sqlite database `log.db` so that you have historic data.
-You can also pass in `--csv log.csv` to have the data in text form.
+the program will also start appending the information to a CSV file so that you have historic data.
 
 The status JSON example:
 ```json

@@ -81,7 +81,7 @@ class StdoutDataLogger implements DataLogger {
 
 /// Prints CSV to given [StringSink].
 class _CsvRenogyWriter {
-  final _formatter = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  final _formatter = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
   final StringSink _sink;
   final bool utc;
 
