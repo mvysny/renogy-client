@@ -27,7 +27,7 @@ extension RandomRanges on Random {
 final Random random = Random();
 
 extension CloseAndFlush on IOSink {
-  /// calls [flush] before [close]
+  /// Calls [flush] before [close].
   Future flushAndClose() async {
     try {
       await flush();
@@ -36,6 +36,7 @@ extension CloseAndFlush on IOSink {
     }
   }
 
+  /// Closes this resource asynchronously. Does not throw an exception.
   Future closeQuietly() async {
     try {
       await close();

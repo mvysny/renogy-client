@@ -80,11 +80,15 @@ class Args {
   static Args parse(List<String> args) {
     try {
       final ArgResults ar = _argParser.parse(args);
+
       if (ar.rest.length != 1) throw ArgParserException("Please supply one serial device");
       final pollInterval = int.tryParse(ar['pollinterval']);
       if (pollInterval == null) throw ArgParserException("pollinterval: not a number");
+      if (pollInterval < 1) throw ArgParserException("pollinterval: must be 1 or higher");
       final pruneLog = int.tryParse(ar['prunelog']);
       if (pruneLog == null) throw ArgParserException("prunelog: not a number");
+      if (pruneLog < 1) throw ArgParserException("pruneLog: must be 1 or higher");
+
       final Args a = Args(
           File(ar.rest.first),
           ar['status'] as bool,

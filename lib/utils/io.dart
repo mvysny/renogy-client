@@ -39,7 +39,7 @@ extension FullyIO on IO {
 
   /// Reads exactly [noBytes] from this IO, blocking indefinitely.
   Uint8List readFully(int noBytes) {
-    if (noBytes < 0) throw ArgumentError.value(noBytes, "noBytes", "must be 0 or greater");
+    RangeError.checkNotNegative(noBytes, "noBytes");
     if (noBytes == 0) return Uint8List(0);
     final result = read(noBytes, timeout: 0);
     if (result.length != noBytes) throw StateError("Expected $noBytes bytes but got $result");

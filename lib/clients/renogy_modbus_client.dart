@@ -18,8 +18,9 @@ class RenogyModbusClient {
 
   /// Performs the ReadRegister call and returns the data returned. Internal, don't use.
   Uint8List readRegister(int startAddress, int noOfReadBytes) {
+    if (!noOfReadBytes.isEven) throw ArgumentError.value(noOfReadBytes, "noOfReadBytes", "Must be even");
     final int noOfReadWords = noOfReadBytes ~/ 2;
-    if (noOfReadWords < 1 || noOfReadWords > 0x7d) throw ArgumentError.value(noOfReadWords, "noOfReadWords", "must be 0x0001..0x007D");
+    RangeError.checkValueInInterval(noOfReadWords, 1, 0x7d, "noOfReadWords");
 
     // prepare request
     final request = ByteData(8);
@@ -63,7 +64,7 @@ class RenogyModbusClient {
   static final int _commandReadRegister = 3;
 
   void _verifyCRC(int expected, Uint8List actual) {
-    if (actual.length != 2) throw ArgumentError.value(actual, "actual", "must be of size 2");
+    RangeError.checkValueInInterval(actual.length, 2, 2, "actual");
     // for CRC, low byte is sent first, then the high byte.
     final actualUShort = ByteData.sublistView(actual).getUint16(0, Endian.little);
     if (actualUShort != expected) {

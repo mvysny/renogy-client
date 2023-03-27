@@ -7,8 +7,8 @@ class LocalDate implements Comparable<LocalDate> {
   final int day;
 
   LocalDate(this.year, this.month, this.day) {
-    if (month < 1 || month > 12) throw ArgumentError.value(month, "month", "must be 1..12");
-    if (day < 1 || day > 31) throw ArgumentError.value(day, "day", "must be 1..31");
+    RangeError.checkValueInInterval(month, 1, 12, "month");
+    RangeError.checkValueInInterval(day, 1, 31, "day");
   }
   factory LocalDate.from(DateTime dateTime) {
     final local = dateTime.toLocal();

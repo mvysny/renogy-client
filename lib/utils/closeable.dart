@@ -19,12 +19,12 @@ extension CloseQuietly on Closeable {
 
 /// A resource that can be closed.
 abstract class AsyncCloseable {
-  /// Closes this resource. May throw an exception if the close fails.
+  /// Closes this resource asynchronously. May throw an exception if the close fails.
   Future close();
 }
 
 extension AsyncCloseQuietly on AsyncCloseable {
-  /// Closes this resource. Does not throw an exception.
+  /// Closes this resource asynchronously. Does not throw an exception.
   Future closeQuietly() async {
     try {
       await close();
