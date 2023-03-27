@@ -175,5 +175,20 @@ class RenogyModbusClient {
     return result;
   }
 
+  /// Returns the current charging status and any current faults.
+  RenogyStatus getStatus() {
+    _log.fine("getting status");
+    final register = readRegister(0x120, 6);
+    final data = ByteData.sublistView(register);
+    final result = RenogyStatus();
+
+    result.streetLightOn = (data.getUint8(0) & 0x80) != 0;
+    result.streetLightBrightness = data.getUint8(0) & 0x7F;
+    result.chargingState = ChargingState.fromModbus(data.getUint8(1));
+    final faultBits = data.getUint32(2);
+    result.faults = ControllerFaults.fromModbus(faultBits);
+    return result;
+  }
+
   static final _log = Logger((RenogyModbusClient).toString());
 }
