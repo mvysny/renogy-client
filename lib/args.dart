@@ -116,7 +116,7 @@ class Args {
     Logger.root.level = Level.INFO;
     final DateFormat timestampFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
     Logger.root.onRecord.listen((record) {
-      print('${timestampFormatter.format(record.time)} [${record.loggerName}] ${record.level.name}: ${record.message}');
+      print('${timestampFormatter.format(record.time)} [${record.level.name}] ${record.loggerName}: ${record.message}');
       if (record.error != null) print(record.error);
       if (record.stackTrace != null) print(record.stackTrace);
     });
