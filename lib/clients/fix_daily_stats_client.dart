@@ -25,7 +25,7 @@ class FixDailyStatsClient implements RenogyClient {
 
   FixDailyStatsClient(this.delegate, Cron cron) {
     _log.info("Starting with daily stats $_dailyStatsCalculator");
-    cron.schedule(scheduleMidnight, () { _crossedMidnight = true; });
+    _cronTask = cron.schedule(scheduleMidnight, () { _crossedMidnight = true; });
   }
 
   static final _log = Logger((FixDailyStatsClient).toString());
