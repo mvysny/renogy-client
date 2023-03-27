@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:logging/logging.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 
@@ -56,4 +58,58 @@ class _RenogyPassThrough implements _DailyStatsStrategy {
   @override
   String toString() =>
       "RenogyPassThrough(powerGenerationDuringDontTrustPeriod=$powerGenerationDuringDontTrustPeriod)";
+}
+
+/// The time from midnight until 9:17am (or any other arbitrary point in time until Renogy finally resets the data)
+/// is called the "Don't Trust Renogy" period. In this period, we don't trust Renogy - instead, we calculate the daily stats ourselves.
+class _DontTrustRenogyPeriod implements _DailyStatsStrategy {
+  final RenogyData midnightData;
+
+  /// Cumulative power generation at midnight as reported by Renogy. We use this to offset the power generation
+  /// during the "Don't Trust Renogy" period.
+  final int powerGenerationAtMidnight;
+
+  /// Statistics calculated by us.
+  final _MyDailyStats myDailyStats;
+
+  _DontTrustRenogyPeriod(this.midnightData)
+      : powerGenerationAtMidnight = midnightData.dailyStats.powerGenerationWh,
+        myDailyStats = _MyDailyStats(midnightData.powerStatus);
+
+  @override
+  void process(RenogyData data) {
+    myDailyStats.update(data.powerStatus);
+    data.dailyStats
+      ..batteryMinVoltage = myDailyStats.batteryMinVoltage
+      ..batteryMaxVoltage = myDailyStats.batteryMaxVoltage
+      ..maxChargingCurrent = myDailyStats.maxChargingCurrent
+      ..maxChargingPower = myDailyStats.maxChargingPower
+      ..chargingAh = 0
+      ..powerGenerationWh -= powerGenerationAtMidnight;
+  }
+
+  @override
+  String toString() =>
+      "DontTrustRenogyPeriod(powerGenerationAtMidnight=$powerGenerationAtMidnight)";
+}
+
+class _MyDailyStats {
+  double batteryMinVoltage;
+  double batteryMaxVoltage;
+  double maxChargingCurrent;
+  int maxChargingPower;
+
+  _MyDailyStats(PowerStatus initialData)
+      : batteryMinVoltage = initialData.batteryVoltage,
+        batteryMaxVoltage = initialData.batteryVoltage,
+        maxChargingCurrent = initialData.chargingCurrentToBattery,
+        maxChargingPower = initialData.solarPanelPower;
+
+  void update(PowerStatus powerStatus) {
+    batteryMinVoltage = min(batteryMinVoltage, powerStatus.batteryVoltage);
+    batteryMaxVoltage = max(batteryMaxVoltage, powerStatus.batteryVoltage);
+    maxChargingCurrent =
+        max(maxChargingCurrent, powerStatus.chargingCurrentToBattery);
+    maxChargingPower = max(maxChargingPower, powerStatus.solarPanelPower);
+  }
 }
