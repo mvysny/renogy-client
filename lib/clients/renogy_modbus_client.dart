@@ -9,12 +9,13 @@ import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/io.dart';
 import 'package:renogy_client/utils/modbus_crc.dart';
 
-/// Communicates with Renogy Rover over [io]. Doesn't close [io] on [close].
-///
-/// [deviceAddress] identifies the Renogy Rover if there are multiple Renogy devices on the network.
-class RenogyModbusClient {
+/// Communicates with Renogy Rover over [_io]. Doesn't close [_io] on [close].
+class RenogyModbusClient implements RenogyClient {
+  /// Communicates over this pipe.
   final IO _io;
+  /// Identifies the Renogy Rover if there are multiple Renogy devices on the network.
   final int deviceAddress;
+
   RenogyModbusClient(this._io, {this.deviceAddress = 1}) {
     RangeError.checkValueInInterval(deviceAddress, 0, 0xf7, "deviceAddress", "Device address must be 0x01..0xf7, 0x00 is a broadcast address to which all slaves respond but do not return commands");
   }
@@ -191,4 +192,17 @@ class RenogyModbusClient {
   }
 
   static final _log = Logger((RenogyModbusClient).toString());
+
+  @override
+  void close() {}
+
+  @override
+  RenogyData getAllData({SystemInfo? cachedSystemInfo}) {
+    return RenogyData()
+      ..systemInfo = cachedSystemInfo ?? getSystemInfo()
+      ..powerStatus = getPowerStatus()
+      ..dailyStats = getDailyStats()
+      ..historicalData = getHistoricalData()
+      ..status = getStatus();
+  }
 }
