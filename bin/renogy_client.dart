@@ -13,6 +13,7 @@ import 'package:renogy_client/utils/io.dart';
 import 'package:renogy_client/utils/utils.dart';
 
 void main(List<String> arguments) async {
+  print('Available serial ports: ${SerialPort.availablePorts}');
   final args = Args.parse(arguments);
 
   final SerialPortIO? io = args.isDummy ? null : SerialPortIO(SerialPort(args.device.path));
