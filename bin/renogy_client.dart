@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cron/cron.dart';
-import 'package:libserialport/libserialport.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
@@ -15,7 +14,7 @@ import 'package:renogy_client/utils/utils.dart';
 void main(List<String> arguments) async {
   final args = Args.parse(arguments);
 
-  final SerialPortIO? io = args.isDummy ? null : SerialPortIO(SerialPort(args.device.path));
+  final SerialPortIO? io = args.isDummy ? null : SerialPortIO(args.device.path);
   try {
     io?.configure();
     final cron = Cron();

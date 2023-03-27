@@ -79,6 +79,9 @@ class FixDailyStatsClient implements RenogyClient {
   SystemInfo getSystemInfo() {
     return delegate.getSystemInfo();
   }
+
+  @override
+  String toString() => "FixDailyStatsClient{$delegate}";
 }
 
 abstract class _DailyStatsStrategy {

@@ -49,8 +49,10 @@ extension FullyIO on IO {
 
 /// Wraps [SerialPort] as [IO].
 class SerialPortIO implements IO {
+  /// The serial device name, e.g. `/dev/ttyUSB0`.
+  final String devName;
   final SerialPort _serialPort;
-  SerialPortIO(this._serialPort);
+  SerialPortIO(this.devName) : _serialPort = SerialPort(devName);
 
   void configure() {
     _serialPort.openReadWrite();
@@ -86,4 +88,7 @@ class SerialPortIO implements IO {
   }
 
   static final Logger _log = Logger((SerialPortIO).toString());
+
+  @override
+  String toString() => 'SerialPortIO{devName: $devName}';
 }
