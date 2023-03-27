@@ -13,7 +13,7 @@ class RenogyModbusClient {
   final IO _io;
   final int deviceAddress;
   RenogyModbusClient(this._io, {this.deviceAddress = 1}) {
-    if (deviceAddress < 0 || deviceAddress > 0xf7) throw ArgumentError.value(deviceAddress, "deviceAddress", "Device address must be 0x01..0xf7, 0x00 is a broadcast address to which all slaves respond but do not return commands");
+    RangeError.checkValueInInterval(deviceAddress, 0, 0xf7, "deviceAddress", "Device address must be 0x01..0xf7, 0x00 is a broadcast address to which all slaves respond but do not return commands");
   }
 
   /// Performs the ReadRegister call and returns the data returned. Internal, don't use.
