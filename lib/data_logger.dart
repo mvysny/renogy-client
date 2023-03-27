@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
+import 'package:postgres/postgres.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/utils/closeable.dart';
 import 'package:renogy_client/utils/utils.dart';
@@ -181,4 +183,111 @@ class CSVDataLogger implements DataLogger {
 
   @override
   String toString() => "CSVDataLogger{$file, utc=$utc}";
+}
+
+/// Logs [RenogyData] to a PostgreSQL database.
+class PostgresDataLogger implements DataLogger {
+  // The connection URL, e.g. `postgresql://user:pass@localhost:5432/postgres`.
+  final Uri url;
+
+  PostgresDataLogger(this.url);
+
+  factory PostgresDataLogger.parse(String url) {
+    final uri = Uri.parse(url);
+    if (uri.scheme != 'postgresql') throw ArgumentError.value(url, "url", "Not a postgresql:// URL");
+    return PostgresDataLogger(uri);
+  }
+
+  PostgreSQLConnection _newConnection() {
+    var userInfo = url.userInfo.split(':');
+    final String? username = userInfo.firstOrNull;
+    final String? password = userInfo.length >= 2 ? userInfo[1] : null;
+    return PostgreSQLConnection(url.host, url.port == 0 ? 5432 : url.port, url.pathSegments[0], username: username, password: password);
+  }
+
+  PostgreSQLConnection? _conn;
+
+  @override
+  Future<void> append(RenogyData data) async {
+    String? faults = data.status.faults.map((e) => e.name).join(",");
+    faults = faults.isEmpty ? null : faults;
+    final params = <String, Object?>{
+      "DateTime": DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      "BatterySOC": data.powerStatus.batterySOC,
+      "BatteryVoltage": data.powerStatus.batteryVoltage,
+      "ChargingCurrentToBattery": data.powerStatus.chargingCurrentToBattery,
+      "BatteryTemp": data.powerStatus.batteryTemp,
+      "ControllerTemp": data.powerStatus.controllerTemp,
+      "SolarPanelVoltage": data.powerStatus.solarPanelVoltage,
+      "SolarPanelCurrent": data.powerStatus.solarPanelCurrent,
+      "SolarPanelPower": data.powerStatus.solarPanelPower,
+      "Daily_BatteryMinVoltage": data.dailyStats.batteryMinVoltage,
+      "Daily_BatteryMaxVoltage": data.dailyStats.batteryMaxVoltage,
+      "Daily_MaxChargingCurrent": data.dailyStats.maxChargingCurrent,
+      "Daily_MaxChargingPower": data.dailyStats.maxChargingPower,
+      "Daily_ChargingAmpHours": data.dailyStats.chargingAh,
+      "Daily_PowerGeneration": data.dailyStats.powerGenerationWh,
+      "Stats_DaysUp": data.historicalData.daysUp,
+      "Stats_BatteryOverDischargeCount":
+          data.historicalData.batteryOverDischargeCount,
+      "Stats_BatteryFullChargeCount":
+          data.historicalData.batteryFullChargeCount,
+      "Stats_TotalChargingBatteryAH":
+          data.historicalData.totalChargingBatteryAH,
+      "Stats_CumulativePowerGenerationWH":
+          data.historicalData.cumulativePowerGenerationWH,
+      "ChargingState": data.status.chargingState?.value,
+      "Faults": faults
+    };
+
+    await _conn!.execute("insert into log (${params.keys.join(",")}) values (${params.keys.map((e) => "@$e").join(",")})",
+      substitutionValues: params);
+  }
+
+  @override
+  Future<void> close() async {
+    await _conn?.close();
+    _conn = null;
+    _log.fine("PostgreSQL connection closed");
+  }
+
+  @override
+  Future<void> deleteRecordsOlderThan(int days) async {
+    final int deleteOlderThan = (DateTime.now().millisecondsSinceEpoch ~/ 1000) - Duration(days: days).inSeconds;
+    await _conn!.execute("delete from log where DateTime <= $deleteOlderThan");
+  }
+
+  @override
+  Future<void> init() async {
+    _conn = _newConnection();
+    await _conn!.open();
+    await _conn!.execute("CREATE TABLE IF NOT EXISTS log (" +
+        "DateTime bigint primary key not null," +
+        "BatterySOC smallint not null," +
+        "BatteryVoltage real not null," +
+        "ChargingCurrentToBattery real not null," +
+        "BatteryTemp smallint not null," +
+        "ControllerTemp smallint not null," +
+        "SolarPanelVoltage real not null," +
+        "SolarPanelCurrent real not null," +
+        "SolarPanelPower smallint not null," +
+        "Daily_BatteryMinVoltage real not null," +
+        "Daily_BatteryMaxVoltage real not null," +
+        "Daily_MaxChargingCurrent real not null," +
+        "Daily_MaxChargingPower smallint not null," +
+        "Daily_ChargingAmpHours smallint not null," +
+        "Daily_PowerGeneration smallint not null," +
+        "Stats_DaysUp int not null," +
+        "Stats_BatteryOverDischargeCount smallint not null," +
+        "Stats_BatteryFullChargeCount smallint not null," +
+        "Stats_TotalChargingBatteryAH int not null," +
+        "Stats_CumulativePowerGenerationWH int not null," +
+        "ChargingState smallint," +
+        "Faults text)");
+  }
+
+  @override
+  String toString() => 'PostgresDataLogger{url: $url}';
+
+  static final _log = Logger((PostgresDataLogger).toString());
 }

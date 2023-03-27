@@ -117,6 +117,8 @@ class Args {
     final DateFormat timestampFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
     Logger.root.onRecord.listen((record) {
       print('${timestampFormatter.format(record.time)} [${record.loggerName}] ${record.level.name}: ${record.message}');
+      if (record.error != null) print(record.error);
+      if (record.stackTrace != null) print(record.stackTrace);
     });
     if (verbose) Logger.root.level = Level.ALL;
   }
@@ -136,6 +138,9 @@ class Args {
     try {
       if (csv != null) {
         result.dataLoggers.add(CSVDataLogger(csv!, utc));
+      }
+      if (postgres != null) {
+        result.dataLoggers.add(PostgresDataLogger.parse(postgres!));
       }
       if (result.dataLoggers.isEmpty) {
         result.dataLoggers.add(StdoutDataLogger(utc));

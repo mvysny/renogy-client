@@ -22,3 +22,4 @@ dependencies:
   libserialport: ^0.3.0+1
   logging: ^1.1.1
   path: ^1.8.3
+  postgres: ^2.6.1
