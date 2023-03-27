@@ -167,8 +167,8 @@ class RenogyModbusClient implements RenogyClient {
     result.daysUp = data.getUint16(0);
     result.batteryOverDischargeCount = data.getUint16(2);
     result.batteryFullChargeCount = data.getUint16(4);
-    result.totalChargingBatteryAH = data.getUint16(6);
-    result.totalDischargingBatteryAH = data.getUint16(10);
+    result.totalChargingBatteryAH = data.getUint32(6);
+    result.totalDischargingBatteryAH = data.getUint32(10);
     // The manual spec says kWh/10000; the manual example says kWh which doesn't make any sense.
     // I'll make an educated guess here: it's Wh.
     result.cumulativePowerGenerationWH = data.getUint32(14);
