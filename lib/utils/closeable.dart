@@ -20,12 +20,12 @@ extension CloseQuietly on Closeable {
 /// A resource that can be closed.
 abstract class AsyncCloseable {
   /// Closes this resource asynchronously. May throw an exception if the close fails.
-  Future close();
+  Future<void> close();
 }
 
 extension AsyncCloseQuietly on AsyncCloseable {
   /// Closes this resource asynchronously. Does not throw an exception.
-  Future closeQuietly() async {
+  Future<void> closeQuietly() async {
     try {
       await close();
     } on Exception catch (e, s) {

@@ -10,13 +10,13 @@ import 'package:renogy_client/utils/utils.dart';
 /// Logs [RenogyData] somewhere.
 abstract class DataLogger extends AsyncCloseable {
   /// Initializes the logger; e.g. makes sure the CSV file exists and creates one with a header if it doesn't.
-  Future init();
+  Future<void> init();
 
   /// Appends [data] to the logger.
-  Future append(RenogyData data);
+  Future<void> append(RenogyData data);
 
   /// Deletes all records older than given number of [days].
-  Future deleteRecordsOlderThan(int days);
+  Future<void> deleteRecordsOlderThan(int days);
 }
 
 /// Aggregates multiple [DataLogger]s. Add them to [dataLoggers] before calling [init].
@@ -24,26 +24,26 @@ class CompositeDataLogger implements DataLogger {
   final dataLoggers = <DataLogger>[];
 
   @override
-  Future append(RenogyData data) async {
+  Future<void> append(RenogyData data) async {
     await Future.wait(dataLoggers.map((e) => e.append(data)));
   }
 
   @override
-  Future close() async {
+  Future<void> close() async {
     await Future.wait(dataLoggers.map((e) => e.closeQuietly()));
     _log.fine("Closed $dataLoggers");
     dataLoggers.clear();
   }
 
   @override
-  Future deleteRecordsOlderThan(int days) async {
+  Future<void> deleteRecordsOlderThan(int days) async {
     _log.info("Deleting old records");
     await Future.wait(dataLoggers.map((e) => e.deleteRecordsOlderThan(days)));
     _log.info("Successfully deleted old records");
   }
 
   @override
-  Future init() async {
+  Future<void> init() async {
     await Future.wait(dataLoggers.map((e) => e.init()));
   }
   static final _log = Logger((CompositeDataLogger).toString());
@@ -58,18 +58,18 @@ class StdoutDataLogger implements DataLogger {
   StdoutDataLogger(bool utc) : _csv = _CsvRenogyWriter(stdout, utc);
 
   @override
-  Future init() async {
+  Future<void> init() async {
     _csv.writeHeader();
   }
 
   @override
-  Future deleteRecordsOlderThan(int days) async {}
+  Future<void> deleteRecordsOlderThan(int days) async {}
 
   @override
-  Future close() async {}
+  Future<void> close() async {}
 
   @override
-  Future append(RenogyData data) async {
+  Future<void> append(RenogyData data) async {
     _csv.writeLine(data);
   }
 
@@ -155,7 +155,7 @@ class CSVDataLogger implements DataLogger {
   CSVDataLogger(this.file, this.utc);
 
   @override
-  Future init() async {
+  Future<void> init() async {
     if (file.existsSync()) {
       _ioSink = file.openWrite(mode: FileMode.writeOnlyAppend);
       _csv = _CsvRenogyWriter(_ioSink, utc);
@@ -167,15 +167,15 @@ class CSVDataLogger implements DataLogger {
   }
 
   @override
-  Future deleteRecordsOlderThan(int days) async {}
+  Future<void> deleteRecordsOlderThan(int days) async {}
 
   @override
-  Future close() async {
+  Future<void> close() async {
     await _ioSink.flushAndClose();
   }
 
   @override
-  Future append(RenogyData data) async {
+  Future<void> append(RenogyData data) async {
     _csv.writeLine(data);
   }
 

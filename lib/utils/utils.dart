@@ -28,7 +28,7 @@ final Random random = Random();
 
 extension CloseAndFlush on IOSink {
   /// Calls [flush] before [close].
-  Future flushAndClose() async {
+  Future<void> flushAndClose() async {
     try {
       await flush();
     } finally {
@@ -37,7 +37,7 @@ extension CloseAndFlush on IOSink {
   }
 
   /// Closes this resource asynchronously. Does not throw an exception.
-  Future closeQuietly() async {
+  Future<void> closeQuietly() async {
     try {
       await close();
     } on Exception catch (e, s) {
@@ -47,6 +47,6 @@ extension CloseAndFlush on IOSink {
 }
 
 /// Blocks until Enter is pressed.
-Future waitForEnter() async {
-  await stdin.transform(utf8.decoder).transform(LineSplitter()).first;
+Future<String> waitForEnter() async {
+  return await stdin.transform(utf8.decoder).transform(LineSplitter()).first;
 }
