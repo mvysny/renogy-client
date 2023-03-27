@@ -14,7 +14,7 @@ which you can inspect to see the performance of your solar array.
 For exact instructions on how to connect Renogy Rover RS232/RJ12 over an USB adapter to your Raspberry PI, please see
 [NodeRenogy](https://github.com/mickwheelz/NodeRenogy).
 
-You can use Grafana and the sqlite plugin to read the sqlite log database and show charging data in charts:
+You can use Grafana and the postgresql plugin to read the postgresql log database and show charging data in charts:
 
 ![Grafana Screenshot](docs/grafana.png)
 
@@ -138,24 +138,29 @@ a nice set of charts.
 
 > WARNING: CSV file will get big over time: 0,5mb logged per day, 180mb file over a year.
 > Grafana WILL spend lots of CPU to parse the CSV file. Only use CSV for initial testing;
-> don't use for regular use. Use sqlite instead.
+> don't use for regular use. Use postgresql instead.
 
-## Sqlite
+## PostgreSQL
 
 The CSV file tends to grow quite quickly. If you intend to use this tool with Grafana,
-it's far better to output the data to the sqlite database. This requires the `sqlite3`
-program installed, simply install it via `sudo apt install sqlite3`.
+it's far better to output the data to a proper database. PostgreSQL is awesome: it consumes roughly 30mb of memory and offers blazing-fast
+queries. Use this if you intend to use this tool with Grafana.
+
+To install the database quickly
+on your Raspberry PI, run the following:
 
 ```bash
-$ ./renogy-client.exe --sqlite log.db /dev/ttyUSB0
+sudo apt install postgresql
+sudo -u postgres psql
+postgres=# create database mydb;
+postgres=# create user myuser with encrypted password 'mypass';
+postgres=# grant all privileges on database mydb to myuser;
 ```
 
-The database looks like the following:
-```
-$ sqlite3 log.db "select * from log"
-1663650263|95|24.029585|6.9642487|19|18|59.87478|2.7949667|167|24.029585|24.029585|6.9642487|167|3.8690272e-05|0.00092971115|1|0|0|0|0.00092971115|2|
-1663650273|79|25.101372|3.1987078|23|20|42.496037|1.8893986|80|24.029585|25.101372|6.9642487|167|0.00892399|0.22396292|1|0|0|0|0.22396293|2|
-1663650283|92|27.782578|4.0570045|21|18|55.49956|2.0308998|112|24.029585|27.782578|6.9642487|167|0.020193446|0.53705746|1|0|0|0|0.5370575|2|
+Then:
+
+```bash
+$ ./renogy-client.exe --postgres postgresql://myuser:mypass@localhost:5432/mydb /dev/ttyUSB0
 ```
 
 The following columns are available in the `log` database table:
@@ -187,7 +192,7 @@ The following columns are available in the `log` database table:
 
 
 The `DateTime` column is an unix timestamp: a number of seconds since the Epoch 00:00:00 UTC on 1 January 1970.
-It's directly compatible with the "number input" timestamp of the [sqlite Grafana plugin](https://grafana.com/grafana/plugins/frser-sqlite-datasource/).
+It's directly compatible with the official [PostgreSQL Grafana plugin](https://grafana.com/docs/grafana/latest/datasources/postgres/).
 
 Values for the `ChargingState` column:
 
@@ -200,40 +205,6 @@ Values for the `ChargingState` column:
 | 4 | BoostChargingMode | Constant Charging Mode. When the battery reaches the constant voltage set point, the controller will start to operate in constant charging mode, where it is no longer MPPT charging. The current will drop gradually. This has two stages, equalize and boost and they are not carried out constantly in a full charge process to avoid too much gas precipitation or overheating of the battery. See EqualizingChargingMode for more details. Boost stage maintains a charge for 2 hours by default. The user can adjust the constant time and preset value of boost per their demand. |
 | 5 | FloatingChargingMode | After the constant voltage stage (BoostChargingMode/EqualizingChargingMode), the controller will reduce the battery voltage to a float voltage set point. Once the battery is fully charged, there will be no more chemical reactions and all the charge current would turn into heat or gas. Because of this, the charge controller will reduce the voltage charge to smaller quantity, while lightly charging the battery. The purpose for this is to offset the power consumption while maintaining a full battery storage capacity. In the event that a load drawn from the battery exceeds the charge current, the controller will no longer be able to maintain the battery to a Float set point and the controller will end the float charge stage and refer back to bulk charging (MpptChargingMode). |
 | 6 | CurrentLimiting | Overpower |
-
-Use the [Sqlite Grafana plugin](https://grafana.com/grafana/plugins/frser-sqlite-datasource/)
-to allow Grafana to read the Sqlite database.
-
-### The `Daily_` stats
-
-The `Daily_` stats are skewed since Renogy resets the stats at arbitrary time. Currently, for me, the stats are reset at 9:17am.
-This client does its best to 'unskew' the data and adjust the data so that it appears as if being reset correctly at midnight.
-
-## PostgreSQL
-
-PostgreSQL is even better than sqlite: it consumes roughly 30mb of memory and offers blazing-fast
-queries. Use this if you intend to use this tool with Grafana. This requires the `psql`
-program installed. It will be installed along the PostgreSQL database. To install the database quickly
-on your Raspberry PI, run the following:
-
-```bash
-sudo apt install postgresql
-sudo -u postgres psql
-postgres=# create database mydb;
-postgres=# create user myuser with encrypted password 'mypass';
-postgres=# grant all privileges on database mydb to myuser;
-```
-
-Then:
-
-```bash
-$ ./renogy-client.exe --postgres postgresql://myuser:mypass@localhost:5432/mydb /dev/ttyUSB0
-```
-
-The database columns are identical to the sqlite columns.
-
-The `DateTime` column is an unix timestamp: a number of seconds since the Epoch 00:00:00 UTC on 1 January 1970.
-It's directly compatible with the official [PostgreSQL Grafana plugin](https://grafana.com/docs/grafana/latest/datasources/postgres/).
 
 ## Dummy Renogy Device
 
