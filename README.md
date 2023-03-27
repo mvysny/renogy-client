@@ -42,8 +42,15 @@ Options:
 
 # Downloading
 
-Download the pre-built binaries at the [Releases](https://github.com/mvysny/renogy-client/releases) page. Alternatively,
-read below on how to compile the project from sources.
+Read below on how to compile the project from sources.
+
+You'll need to install the libserialport first:
+
+```
+$ sudo apt install libserialport0
+$ cd /usr/lib/aarch64-linux-gnu
+$ sudo ln -s libserialport.so.0 libserialport.so
+```
 
 # Running
 
