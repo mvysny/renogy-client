@@ -109,6 +109,31 @@ class RenogyModbusClient {
     return result;
   }
 
+  /// Retrieves the current status of the device, e.g. current voltage on
+  /// the solar panels.
+  PowerStatus getPowerStatus() {
+    _log.fine("getting power status");
+    final register = readRegister(0x0100, 20);
+    final data = ByteData.sublistView(register);
+
+    final result = PowerStatus();
+    result.batterySOC = data.getUint16(0);
+    result.batteryVoltage = data.getUint16(2) / 10;
+    // @todo in modbus spec examples, there's no chargingCurrentToBattery, and
+    // batteryTemp is a WORD at 0x102 and controllerTemp is a WORD at 0x103 - check!
+    result.chargingCurrentToBattery = data.getUint16(4) / 100;
+    result.batteryTemp = data.getUint8(7);
+    result.controllerTemp = data.getUint8(6);
+    result.loadVoltage = data.getUint16(8) / 10;
+    result.loadCurrent = data.getUint16(10) / 100;
+    result.loadPower = data.getUint16(12);
+    result.solarPanelVoltage = data.getUint16(14) / 10;
+    result.solarPanelCurrent = data.getUint16(16) / 100;
+    result.solarPanelPower = data.getUint16(18);
+
+    return result;
+  }
+
   /// Returns the daily statistics.
   DailyStats getDailyStats() {
     _log.fine("getting daily stats");
