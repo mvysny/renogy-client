@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:libserialport/libserialport.dart';
@@ -50,9 +51,9 @@ extension FullyIO on IO {
 /// Wraps [SerialPort] as [IO].
 class SerialPortIO implements IO {
   /// The serial device name, e.g. `/dev/ttyUSB0`.
-  final String devName;
+  final File devName;
   final SerialPort _serialPort;
-  SerialPortIO(this.devName) : _serialPort = SerialPort(devName);
+  SerialPortIO(this.devName) : _serialPort = SerialPort(devName.path);
 
   void configure() {
     _serialPort.openReadWrite();
