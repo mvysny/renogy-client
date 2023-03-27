@@ -42,7 +42,7 @@ Future<void> _mainLoop(RenogyClient client, Args args) async {
 
     final cron = Cron();
     try {
-      cron.schedule(Schedule.parse("0 0 0 * * *"), () async {
+      cron.schedule(scheduleMidnight, () async {
         try {
           await dataLogger.deleteRecordsOlderThan(args.pruneLog);
         } catch (e, t) {

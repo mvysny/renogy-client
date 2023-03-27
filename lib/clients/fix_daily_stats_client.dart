@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:cron/cron.dart';
 import 'package:logging/logging.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
+import 'package:renogy_client/utils/utils.dart';
 
 /// Renogy resets the daily stats not at midnight, but at some arbitrary time during the day.
 /// Currently, for me, the stats are reset at 9:17am, which is a huge wtf.
@@ -14,23 +16,63 @@ class FixDailyStatsClient implements RenogyClient {
   /// [DailyStats.powerGenerationWh] from Renogy's previous measurement. If the current measurement is lower,
   /// Renogy has performed the daily value reset.
   int? _prevPowerGenerationWh = null;
+  /// Poll data from this client.
   final RenogyClient delegate;
+  /// Set to true at midnight via cron.
+  bool _crossedMidnight = false;
+  /// Handle to cron task, canceled in [close].
+  late ScheduledTask _cronTask;
 
-  FixDailyStatsClient(this.delegate) {
+  FixDailyStatsClient(this.delegate, Cron cron) {
     _log.info("Starting with daily stats $_dailyStatsCalculator");
+    cron.schedule(scheduleMidnight, () { _crossedMidnight = true; });
   }
 
   static final _log = Logger((FixDailyStatsClient).toString());
 
   @override
   void close() {
+    _cronTask.cancel();
     delegate.close();
   }
 
   @override
   RenogyData getAllData({SystemInfo? cachedSystemInfo}) {
-    // TODO: implement getAllData
-    throw UnimplementedError();
+    final RenogyData allData = delegate.getAllData(cachedSystemInfo: cachedSystemInfo);
+    final DailyStats currentDailyStatsFromRenogy = allData.dailyStats;
+
+    // if we crossed the day barrier, force DontTrustRenogyPeriod until Renogy zeroes the daily stats out itself.
+    final crossedMidnight = _crossedMidnight;
+    if (crossedMidnight) {
+      _crossedMidnight = false;
+      _dailyStatsCalculator = _DontTrustRenogyPeriod(allData);
+      _log.info("Midnight: activating $_dailyStatsCalculator");
+    }
+
+    // detect whether Renogy finally performed the daily value reset.
+    final prevPowerGenerationWh = _prevPowerGenerationWh;
+    if (prevPowerGenerationWh != null && prevPowerGenerationWh > currentDailyStatsFromRenogy.powerGenerationWh) {
+      // Yes: Renogy finally performed the daily value reset. Switch back to RenogyPassThrough
+      if (_dailyStatsCalculator is _DontTrustRenogyPeriod) {
+        final powerGenerationAtMidnight =
+            (_dailyStatsCalculator as _DontTrustRenogyPeriod).powerGenerationAtMidnight;
+        var powerGenerationDuringDontTrustPeriod = max(prevPowerGenerationWh - powerGenerationAtMidnight, 0);
+        if (crossedMidnight) {
+          // it's midnight AND renogy reset its stats => no "Don't Trust Renogy" period => zero
+          powerGenerationDuringDontTrustPeriod = 0;
+        }
+        _dailyStatsCalculator = _RenogyPassThrough(powerGenerationDuringDontTrustPeriod);
+        _log.info("Renogy performed the daily value reset, ending the 'Don't Trust Renogy' Period (powerGeneration: prev=$prevPowerGenerationWh,now=${currentDailyStatsFromRenogy.powerGenerationWh}); current daily stats=$_dailyStatsCalculator");
+      } else {
+        // not in "Don't Trust Renogy" period? corner-case - perhaps the client was just launched and hasn't hit midnight yet.
+        _log.info("Renogy performed the daily value reset but there was no 'Don't Trust Renogy' Period, passing the daily stats through");
+        _dailyStatsCalculator = _RenogyPassThrough(0);
+      }
+    }
+    _prevPowerGenerationWh = currentDailyStatsFromRenogy.powerGenerationWh;
+
+    _dailyStatsCalculator.process(allData);
+    return allData;
   }
 
   @override

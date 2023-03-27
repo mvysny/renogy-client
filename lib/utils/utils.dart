@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:cron/cron.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
@@ -50,3 +51,5 @@ extension CloseAndFlush on IOSink {
 Future<String> waitForEnter() async {
   return await stdin.transform(utf8.decoder).transform(LineSplitter()).first;
 }
+
+final scheduleMidnight = Schedule.parse("0 0 0 * * *");
