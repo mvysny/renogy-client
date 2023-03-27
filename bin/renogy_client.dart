@@ -27,7 +27,7 @@ void main(List<String> arguments) async {
 
 final _log = Logger.root;
 
-Future _mainLoop(RenogyClient client, Args args) async {
+Future<void> _mainLoop(RenogyClient client, Args args) async {
   _log.info("Accessing solar controller via $client");
   final systemInfo = client.getSystemInfo();
   _log.info("Solar Controller: $systemInfo");
