@@ -59,7 +59,6 @@ class Args {
     ..addFlag('status', help: 'print the Renogy Rover status as JSON to stdout and quit', negatable: false)
     ..addFlag('utc', help: 'CSV: dump date in UTC instead of local, handy for Grafana', negatable: false)
     ..addOption('csv', help: 'appends status to a CSV file, disables stdout status logging')
-    ..addOption('sqlite', help: 'appends status to a sqlite database, disables stdout status logging')
     ..addOption('postgres', help: 'appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. postgresql://user:pass@localhost:5432/postgres')
     ..addOption('statusfile', help: 'overwrites status to given file', defaultsTo: 'status.json')
     ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data', defaultsTo: '10')
