@@ -122,7 +122,7 @@ class RenogyStatus {
   int streetLightBrightness = 0;
 
   /// charging state (if known)
-  ChargingState? chargingState = null;
+  ChargingState? chargingState;
 
   /// current faults, empty if none.
   Set<ControllerFaults> faults = {};
