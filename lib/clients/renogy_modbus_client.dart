@@ -156,5 +156,24 @@ class RenogyModbusClient {
     return stats;
   }
 
+  /// Returns the historical data summary.
+  HistoricalData getHistoricalData() {
+    _log.fine("getting historical data");
+    final register = readRegister(0x0115.toUShort(), 22.toUShort());
+    final data = ByteData.sublistView(register);
+    final result = HistoricalData();
+
+    result.daysUp = data.getUint16(0);
+    result.batteryOverDischargeCount = data.getUint16(2);
+    result.batteryFullChargeCount = data.getUint16(4);
+    result.totalChargingBatteryAH = data.getUint16(6);
+    result.totalDischargingBatteryAH = data.getUint16(10);
+    // The manual spec says kWh/10000; the manual example says kWh which doesn't make any sense.
+    // I'll make an educated guess here: it's Wh.
+    result.cumulativePowerGenerationWH = data.getUint32(14);
+    result.cumulativePowerConsumptionWH = data.getUint32(18);
+    return result;
+  }
+
   static final _log = Logger((RenogyModbusClient).toString());
 }
