@@ -7,6 +7,7 @@ import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/fix_daily_stats_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
 import 'package:renogy_client/clients/renogy_modbus_client.dart';
+import 'package:renogy_client/data_logger.dart';
 import 'package:renogy_client/utils/closeable.dart';
 import 'package:renogy_client/utils/io.dart';
 import 'package:renogy_client/utils/utils.dart';
@@ -49,7 +50,7 @@ Future<void> _mainLoop(RenogyClient client, Args args, Cron cron) async {
   _log.info("Accessing solar controller via $client");
   final systemInfo = client.getSystemInfo();
   _log.info("Solar Controller: $systemInfo");
-  final dataLogger = args.newDataLogger();
+  final DataLogger dataLogger = await args.newDataLogger();
   try {
     _log.info("Polling the solar controller every ${args.pollInterval} seconds; writing status to ${args.statusFile}, appending data to $dataLogger");
     _log.info("Press ENTER to end the program\n");

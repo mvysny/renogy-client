@@ -27,7 +27,7 @@ extension RandomRanges on Random {
 
 final Random random = Random();
 
-extension CloseAndFlush on IOSink {
+extension CloseAndFlushIOSink on IOSink {
   /// Calls [flush] before [close].
   Future<void> flushAndClose() async {
     try {

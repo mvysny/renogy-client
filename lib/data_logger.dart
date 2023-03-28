@@ -149,10 +149,13 @@ class _CsvRenogyWriter {
 
 /// Logs [RenogyData] to a CSV [file].
 class CSVDataLogger implements DataLogger {
+  /// The CSV file to log to.
   final File file;
+  /// True if the time is logged in utc, false if it's logged in local.
   final bool utc;
   /// Opened [file]. Created in [init].
   late IOSink _ioSink;
+  /// Writes to [_ioSink].
   late _CsvRenogyWriter _csv;
   CSVDataLogger(this.file, this.utc);
 

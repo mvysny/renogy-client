@@ -133,7 +133,7 @@ class Args {
   }
 
   /// Creates and returns the data logger. Don't forget to call [DataLogger.init].
-  DataLogger newDataLogger() {
+  Future<DataLogger> newDataLogger() async {
     final result = CompositeDataLogger();
     try {
       if (csv != null) {
@@ -146,7 +146,7 @@ class Args {
         result.dataLoggers.add(StdoutDataLogger(utc));
       }
     } catch(e) {
-      result.close();
+      await result.close();
       rethrow;
     }
     return result;
