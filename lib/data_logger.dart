@@ -307,6 +307,7 @@ class InfluxDbDataLogger implements DataLogger {
 
   late InfluxDBClient _client;
   late WriteService _writeService;
+  late DeleteService _deleteService;
 
   @override
   Future<void> append(RenogyData data) async {
@@ -351,8 +352,7 @@ class InfluxDbDataLogger implements DataLogger {
 
   @override
   Future<void> deleteRecordsOlderThan(int days) async {
-    // TODO: implement deleteRecordsOlderThan
-    print('deleteRecordsOlderThan() not implemented yet');
+    await _deleteService.delete(start: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true), stop: DateTime.now().toUtc().subtract(Duration(days: days)));
   }
 
   @override
@@ -363,6 +363,7 @@ class InfluxDbDataLogger implements DataLogger {
         bucket: bucket);
     await _client.getPingApi().getPingWithHttpInfo();
     _writeService = _client.getWriteService();
+    _deleteService = _client.getDeleteService();
   }
 
   // Accepts the connection URL, e.g. `http://localhost:8086?org=my_org&bucket=my_bucket&token=xyz`.
