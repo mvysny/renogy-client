@@ -13,6 +13,8 @@ abstract class IO implements Closeable {
   ///
   /// If `timeout` is 0 or greater, the read operation is blocking.
   /// The timeout is specified in milliseconds. Pass 0 to wait infinitely.
+  ///
+  /// May return fewer data than requested if the operation timed out.
   Uint8List read(int bytes, {int timeout = -1});
 
   /// Write data to the serial port.
@@ -20,7 +22,8 @@ abstract class IO implements Closeable {
   /// If `timeout` is 0 or greater, the write operation is blocking.
   /// The timeout is specified in milliseconds. Pass 0 to wait infinitely.
   ///
-  /// Returns the amount of bytes written.
+  /// Returns the amount of bytes written. May write less data if the operation
+  /// timed out.
   int write(Uint8List bytes, {int timeout = -1});
 }
 
@@ -29,13 +32,8 @@ extension FullyIO on IO {
   /// Does nothing if the array is empty.
   void writeFully(Uint8List bytes) {
     if (bytes.isEmpty) return;
-
-    var current = 0;
-    while (current < bytes.length) {
-      var bytesWritten = write(bytes.sublist(current), timeout: 0);
-      if (bytesWritten != bytes.length) throw StateError("write returned $bytesWritten");
-      current += bytesWritten;
-    }
+    var bytesWritten = write(bytes, timeout: 0);
+    if (bytesWritten != bytes.length) throw StateError("write returned $bytesWritten");
   }
 
   /// Reads exactly [noBytes] from this IO, blocking indefinitely.
