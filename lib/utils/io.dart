@@ -93,7 +93,7 @@ class SerialPortIO implements IO {
 
   @override
   int write(Uint8List bytes, {int timeout = -1}) {
-    var result = _serialPort.write(bytes, timeout: timeout);
+    final result = _serialPort.write(bytes, timeout: timeout);
     _serialPort.drain();
     return result;
   }
