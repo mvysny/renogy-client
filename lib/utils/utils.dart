@@ -52,4 +52,5 @@ Future<String> waitForEnter() async {
   return await stdin.transform(utf8.decoder).transform(LineSplitter()).first;
 }
 
+/// Cron schedule representing midnight.
 final scheduleMidnight = Schedule.parse("0 0 0 * * *");
