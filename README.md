@@ -218,6 +218,24 @@ Values for the `ChargingState` column:
 | 5 | FloatingChargingMode | After the constant voltage stage (BoostChargingMode/EqualizingChargingMode), the controller will reduce the battery voltage to a float voltage set point. Once the battery is fully charged, there will be no more chemical reactions and all the charge current would turn into heat or gas. Because of this, the charge controller will reduce the voltage charge to smaller quantity, while lightly charging the battery. The purpose for this is to offset the power consumption while maintaining a full battery storage capacity. In the event that a load drawn from the battery exceeds the charge current, the controller will no longer be able to maintain the battery to a Float set point and the controller will end the float charge stage and refer back to bulk charging (MpptChargingMode). |
 | 6 | CurrentLimiting | Overpower |
 
+## InfluxDB
+
+You can also log the data to the [InfluxDB](https://docs.influxdata.com/influxdb/v2.6/) time-series database -
+the OSS version is enough. We only support the 2.x version. See [Installing InfluxDB](https://docs.influxdata.com/influxdb/v2.6/install/)
+on how to install the database on your RPI. InfluxDB is capable of rendering the data, replacing Grafana.
+
+To enable logging to InfluxDB, pass in the following command-line arg:
+
+```bash
+$ ./renogy_client.exe --influx 'http://localhost:8086?org=my_org&bucket=my_bucket&token=ngyXZ=='
+```
+
+The token may be obtained in the InfluxDB admin interface, *Load Data / API Tokens*, you can either generate
+a new one or duplicate existing admin token.
+
+After the data is populated, you can go ahead and create a Dashboard, then populate it with cells, each cell showing a different
+chart + values. Feel free to experiment and replicate the dashboard screenshot shown above.
+
 ## Dummy Renogy Device
 
 Use `dummy` instead
