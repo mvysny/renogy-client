@@ -76,7 +76,6 @@ class SerialPortIO implements IO {
     config.xonXoff = SerialPortXonXoff.disabled;
     config.baudRate = 9600;
     config.setFlowControl(SerialPortFlowControl.none);
-    // _serialPort.config = config;
   }
 
   @override
