@@ -15,8 +15,10 @@ class RenogyModbusClient implements RenogyClient {
   final IO _io;
   /// Identifies the Renogy Rover if there are multiple Renogy devices on the network.
   final int deviceAddress;
+  /// Timeout when accessing [_io].
+  final Duration timeout;
 
-  RenogyModbusClient(this._io, {this.deviceAddress = 1}) {
+  RenogyModbusClient(this._io, this.timeout, {this.deviceAddress = 1}) {
     RangeError.checkValueInInterval(deviceAddress, 0, 0xf7, "deviceAddress", "Device address must be 0x01..0xf7, 0x00 is a broadcast address to which all slaves respond but do not return commands");
   }
 
@@ -36,16 +38,16 @@ class RenogyModbusClient implements RenogyClient {
     request.setUint16(2, startAddress);
     request.setUint16(4, noOfReadWords);
     request.setUint16(6, crcOf(request.buffer.asUint8List(0, 6)), Endian.little);
-    _io.writeFully(request.buffer.asUint8List());
+    _io.writeFully(request.buffer.asUint8List(), timeout: timeout);
 
     // read response
-    final Uint8List responseHeader = _io.readFully(3);
+    final Uint8List responseHeader = _io.readFully(3, timeout: timeout);
     if (responseHeader[0] != deviceAddress) {
       throw RenogyException("${startAddress.toRadixString(16)}: Invalid response: expected deviceAddress $deviceAddress but got ${responseHeader[0]}");
     }
     if (responseHeader[1] == 0x83) {
       // error response. First verify checksum.
-      _verifyCRC(crcOf(responseHeader), _io.readFully(2));
+      _verifyCRC(crcOf(responseHeader), _io.readFully(2, timeout: timeout));
       throw RenogyException.fromCode(responseHeader[2]);
     }
     if (responseHeader[1] != 3) {
@@ -58,9 +60,9 @@ class RenogyModbusClient implements RenogyClient {
     if (dataLength < 1 || dataLength > 0xFA) {
       throw RenogyException("${startAddress.toRadixString(16)}: dataLength must be 0x01..0xFA but was $dataLength");
     }
-    final Uint8List data = _io.readFully(dataLength.toInt());
+    final Uint8List data = _io.readFully(dataLength.toInt(), timeout: timeout);
     // verify the CRC
-    _verifyCRC(crcOf2(responseHeader, data), _io.readFully(2));
+    _verifyCRC(crcOf2(responseHeader, data), _io.readFully(2, timeout: timeout));
 
     // all OK. Return the response
     return data;

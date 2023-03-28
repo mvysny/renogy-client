@@ -22,7 +22,7 @@ void main(List<String> arguments) async {
     try {
       final RenogyClient client = io == null
           ? DummyRenogyClient()
-          : FixDailyStatsClient(RenogyModbusClient(io), cron);
+          : FixDailyStatsClient(RenogyModbusClient(io, Duration.zero), cron);
       try {
         if (args.printStatusOnly) {
           final RenogyData allData = client.getAllData();

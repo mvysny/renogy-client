@@ -44,7 +44,7 @@ void main() {
     test('readRegister000ANormalResponse', () {
       final buffer = Buffer();
       buffer.toReturnAdd("010302181e324c");
-      final client = RenogyModbusClient(buffer);
+      final client = RenogyModbusClient(buffer, Duration.zero);
       final Uint8List response = client.readRegister(0x0A, 0x02);
       buffer.expectWrittenBytes("0103000a0001a408");
       expect("181e", HEX.encode(response.toList()));
@@ -52,7 +52,7 @@ void main() {
     test('readRegister000AErrorResponse', () {
       final buffer = Buffer();
       buffer.toReturnAdd("018302c0f1");
-      final client = RenogyModbusClient(buffer);
+      final client = RenogyModbusClient(buffer, Duration.zero);
       try {
         client.readRegister(0x0A, 0x02);
         fail("Expected to fail with clients.RenogyException");
@@ -65,7 +65,7 @@ void main() {
     test('readRegister000CNormalResponse', () {
       final buffer = Buffer();
       buffer.toReturnAdd("010310202020204d5434383330202020202020ee98");
-      final client = RenogyModbusClient(buffer);
+      final client = RenogyModbusClient(buffer, Duration.zero);
       final response = client.readRegister(0x0C, 16);
       buffer.expectWrittenBytes("0103000c0008840f");
       expect("202020204d5434383330202020202020", HEX.encode(response.toList()));
@@ -81,7 +81,7 @@ void main() {
       // 0608H are the current day's charging amp-hrs (decimal 1544AH);
       // 0810H are the current day's discharging amp-hrs (decimal 2064AH)
       buffer.toReturnAdd("0103140070008400d80000000a00000608081000700084ebde");
-      final client = RenogyModbusClient(buffer);
+      final client = RenogyModbusClient(buffer, Duration.zero);
       final dailyStats = client.getDailyStats();
       buffer.expectWrittenBytes("0103010b000ab5f3");
       final expectedStats = DailyStats()
