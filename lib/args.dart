@@ -66,11 +66,12 @@ class Args {
     ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data', defaultsTo: '10')
     ..addOption('prunelog', help: 'prunes log entries older than x days', defaultsTo: '365')
     ..addFlag('list-serial-ports', help: 'lists all available serial ports and quits', negatable: false)
-    ..addFlag('verbose', help: 'Print verbosely what I\'m doing', negatable: false);
+    ..addFlag('verbose', abbr: 'V', help: 'Print verbosely what I\'m doing', negatable: false)
+    ..addFlag('help', abbr: 'h', help: 'Print this usage information', negatable: false);
 
   /// Prints help and stops the program.
   static Never _help() {
-    print('Usage: renogy_client options_list');
+    print('Usage: renogy_client [options_list] device');
     print('Arguments:');
     print('  device -> the file name of the serial device to communicate with, e.g. /dev/ttyUSB0 . Pass in `dummy` for a dummy Renogy client');
     print('Options:');
@@ -82,11 +83,14 @@ class Args {
   static Args parse(List<String> args) {
     try {
       final ArgResults ar = _argParser.parse(args);
-
       if (ar['list-serial-ports'] as bool) {
         print('Available serial ports: ${SerialPort.availablePorts}');
         exit(0);
       }
+      if (ar['help'] as bool) {
+        _help();
+      }
+
       if (ar.rest.length != 1) throw ArgParserException("Please supply one serial device");
       final pollInterval = int.tryParse(ar['pollinterval']);
       if (pollInterval == null) throw ArgParserException("pollinterval: not a number");
