@@ -25,19 +25,24 @@ Run:
 ```bash
 $ ./renogy-client.exe -h
 
-Usage: solar-controller-client options_list
-Arguments: 
-    device -> the file name of the serial device to communicate with, e.g. /dev/ttyUSB0 . Pass in `dummy` for a dummy Renogy client { String }
-Options: 
-    --status -> print the Renogy Rover status as JSON to stdout and quit 
-    --utc -> CSV: dump date in UTC instead of local, handy for Grafana 
-    --csv -> appends status to a CSV file, disables stdout status logging { String }
-    --postgres -> appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. postgresql://user:pass@localhost:5432/postgres { String }
-    --statefile -> overwrites status to file other than the default 'status.json' { String }
-    --pollinterval, -i -> in seconds: how frequently to poll the controller for data, defaults to 10 { Int }
-    --prunelog -> prunes log entries older than x days, defaults to 365 { Int }
-    --verbose -> Print verbosely what I'm doing 
-    --help, -h -> Usage info 
+Usage: renogy_client [options_list] device
+Arguments:
+  device -> the file name of the serial device to communicate with, e.g. /dev/ttyUSB0 . Pass in 'dummy' for a dummy Renogy client
+Options:
+    --status               print the Renogy Rover status as JSON to stdout and quit
+    --utc                  CSV: dump date in UTC instead of local, handy for Grafana
+    --csv                  appends status to a CSV file, disables stdout status logging
+    --postgres             appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. postgresql://user:pass@localhost:5432/postgres
+    --influx               appends status to InfluxDB database, disables stdout status logging. Accepts the connection url, e.g. http://localhost:8086?org=my_org&bucket=my_bucket&token=xyz
+    --statusfile           overwrites status to given file
+                           (defaults to "status.json")
+-i, --pollinterval         in seconds: how frequently to poll the controller for data
+                           (defaults to "10")
+    --prunelog             prunes log entries older than x days
+                           (defaults to "365")
+    --list-serial-ports    lists all available serial ports and quits
+-V, --verbose              Print verbosely what I'm doing
+-h, --help                 Print this usage information
 ```
 
 # Downloading

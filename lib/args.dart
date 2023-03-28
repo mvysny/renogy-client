@@ -73,7 +73,7 @@ class Args {
   static Never _help() {
     print('Usage: renogy_client [options_list] device');
     print('Arguments:');
-    print('  device -> the file name of the serial device to communicate with, e.g. /dev/ttyUSB0 . Pass in `dummy` for a dummy Renogy client');
+    print("  device -> the file name of the serial device to communicate with, e.g. /dev/ttyUSB0 . Pass in 'dummy' for a dummy Renogy client");
     print('Options:');
     print(_argParser.usage);
     exit(64); // Exit code 64 indicates a usage error.
