@@ -20,8 +20,11 @@ class RenogyModbusClient implements RenogyClient {
     RangeError.checkValueInInterval(deviceAddress, 0, 0xf7, "deviceAddress", "Device address must be 0x01..0xf7, 0x00 is a broadcast address to which all slaves respond but do not return commands");
   }
 
-  /// Performs the ReadRegister call and returns the data returned. Internal, don't use.
+  /// Performs the ReadRegister call and returns the data returned.
+  ///
+  /// Internal, don't use. Visible for testing only.
   Uint8List readRegister(int startAddress, int noOfReadBytes) {
+    RangeError.checkValueInInterval(startAddress, 0, 0x1000, "startAddress");
     if (!noOfReadBytes.isEven) throw ArgumentError.value(noOfReadBytes, "noOfReadBytes", "Must be even");
     final int noOfReadWords = noOfReadBytes ~/ 2;
     RangeError.checkValueInInterval(noOfReadWords, 1, 0x7d, "noOfReadWords");
@@ -32,9 +35,7 @@ class RenogyModbusClient implements RenogyClient {
     request.setUint8(1, _commandReadRegister);
     request.setUint16(2, startAddress);
     request.setUint16(4, noOfReadWords);
-    final crc = ModbusCRC();
-    crc.update(request.buffer.asUint8List(0, 6));
-    request.setUint16(6, crc.crc, Endian.little);
+    request.setUint16(6, crcOf(request.buffer.asUint8List(0, 6)), Endian.little);
     _io.writeFully(request.buffer.asUint8List());
 
     // read response
@@ -67,12 +68,14 @@ class RenogyModbusClient implements RenogyClient {
 
   static final int _commandReadRegister = 3;
 
+  /// Checks that the [actual] CRC matches the [expected] value. Fails with
+  /// [RenogyException] if it doesn't.
   void _verifyCRC(int expected, Uint8List actual) {
     RangeError.checkValueInInterval(actual.length, 2, 2, "actual");
     // for CRC, low byte is sent first, then the high byte.
-    final actualUShort = ByteData.sublistView(actual).getUint16(0, Endian.little);
-    if (actualUShort != expected) {
-      throw RenogyException("Checksum mismatch: expected ${expected.toRadixString(16)} but got ${actualUShort.toRadixString(16)}");
+    final actualInt = ByteData.sublistView(actual).getUint16(0, Endian.little);
+    if (actualInt != expected) {
+      throw RenogyException("Checksum mismatch: expected ${expected.toRadixString(16)} but got ${actualInt.toRadixString(16)}");
     }
   }
 
