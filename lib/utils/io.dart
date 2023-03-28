@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -11,16 +12,16 @@ abstract class IO implements Closeable {
   ///
   /// The operation attempts to read N `bytes` of data.
   ///
-  /// If `timeout` is 0 or greater, the read operation is blocking.
-  /// The timeout is specified in milliseconds. Pass 0 to wait infinitely.
+  /// If [timeout] is 0 or greater, the read operation is blocking.
+  /// The [timeout] is specified in milliseconds. Pass 0 to wait infinitely.
   ///
   /// May return fewer data than requested if the operation timed out.
   Uint8List read(int bytes, {int timeout = -1});
 
   /// Write data to the serial port.
   ///
-  /// If `timeout` is 0 or greater, the write operation is blocking.
-  /// The timeout is specified in milliseconds. Pass 0 to wait infinitely.
+  /// If [timeout] is 0 or greater, the write operation is blocking.
+  /// The [timeout] is specified in milliseconds. Pass 0 to wait infinitely.
   ///
   /// Returns the amount of bytes written. May write less data if the operation
   /// timed out.
@@ -28,20 +29,31 @@ abstract class IO implements Closeable {
 }
 
 extension FullyIO on IO {
-  /// Writes all [bytes] to the underlying IO. Blocks until the bytes are written.
-  /// Does nothing if the array is empty.
-  void writeFully(Uint8List bytes) {
+  /// Writes all [bytes] to the underlying IO. Blocks until the bytes are written,
+  /// or until the timeout passes. Throws [TimeoutException] on timeout. Does nothing if the array is empty.
+  ///
+  /// The [timeout] is specified in milliseconds. Pass 0 to wait infinitely.
+  void writeFully(Uint8List bytes, {Duration timeout = Duration.zero}) {
+    RangeError.checkNotNegative(timeout.inMilliseconds, "timeout");
     if (bytes.isEmpty) return;
-    var bytesWritten = write(bytes, timeout: 0);
-    if (bytesWritten != bytes.length) throw StateError("write returned $bytesWritten");
+    var bytesWritten = write(bytes, timeout: timeout.inMilliseconds);
+    if (bytesWritten != bytes.length) {
+      throw TimeoutException("Timeout writing data; expected to write ${bytes.length} bytes but wrote $bytesWritten bytes", timeout);
+    }
   }
 
-  /// Reads exactly [noBytes] from this IO, blocking indefinitely.
-  Uint8List readFully(int noBytes) {
+  /// Reads exactly [noBytes] from this IO, blocking until the bytes are read,
+  /// or until the timeout passes. Throws [TimeoutException] on timeout. Does nothing if 0 bytes are to be read.
+  ///
+  /// The [timeout] is specified in milliseconds. Pass 0 to wait infinitely.
+  Uint8List readFully(int noBytes, {Duration timeout = Duration.zero}) {
     RangeError.checkNotNegative(noBytes, "noBytes");
+    RangeError.checkNotNegative(timeout.inMilliseconds, "timeout");
     if (noBytes == 0) return Uint8List(0);
-    final result = read(noBytes, timeout: 0);
-    if (result.length != noBytes) throw StateError("Expected $noBytes bytes but got $result");
+    final result = read(noBytes, timeout: timeout.inMilliseconds);
+    if (result.length != noBytes) {
+      throw TimeoutException("Timeout reading data; expected to read $noBytes bytes but got $result bytes", timeout);
+    }
     return result;
   }
 }
