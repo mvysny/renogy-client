@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:csv/csv.dart';
+import 'package:influxdb_client/api.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:postgres/postgres.dart';
@@ -293,4 +294,87 @@ class PostgresDataLogger implements DataLogger {
   String toString() => 'PostgresDataLogger{url: $url}';
 
   static final _log = Logger((PostgresDataLogger).toString());
+}
+
+/// Writes to an InfluxDB 2.x database, to the `renogy` measurement.
+class InfluxDbDataLogger implements DataLogger {
+  // The connection URL, e.g. `http://localhost:8086?org=my_org&bucket=my_bucket&token=xyz`.
+  final String url;
+  final String org;
+  final String bucket;
+  final String token;
+  InfluxDbDataLogger(this.url, this.org, this.bucket, this.token);
+
+  late InfluxDBClient _client;
+  late WriteService _writeService;
+
+  @override
+  Future<void> append(RenogyData data) async {
+    String? faults = data.status.faults.map((e) => e.name).join(",");
+    faults = faults.isEmpty ? null : faults;
+    final point = Point('renogy')
+        .addField("BatterySOC", data.powerStatus.batterySOC)
+        .addField("BatteryVoltage", data.powerStatus.batteryVoltage)
+        .addField("ChargingCurrentToBattery",
+            data.powerStatus.chargingCurrentToBattery)
+        .addField("BatteryTemp", data.powerStatus.batteryTemp)
+        .addField("ControllerTemp", data.powerStatus.controllerTemp)
+        .addField("SolarPanelVoltage", data.powerStatus.solarPanelVoltage)
+        .addField("SolarPanelCurrent", data.powerStatus.solarPanelCurrent)
+        .addField("SolarPanelPower", data.powerStatus.solarPanelPower)
+        .addField("Daily_BatteryMinVoltage", data.dailyStats.batteryMinVoltage)
+        .addField("Daily_BatteryMaxVoltage", data.dailyStats.batteryMaxVoltage)
+        .addField(
+            "Daily_MaxChargingCurrent", data.dailyStats.maxChargingCurrent)
+        .addField("Daily_MaxChargingPower", data.dailyStats.maxChargingPower)
+        .addField("Daily_ChargingAmpHours", data.dailyStats.chargingAh)
+        .addField("Daily_PowerGeneration", data.dailyStats.powerGenerationWh)
+        .addField("Stats_DaysUp", data.historicalData.daysUp)
+        .addField("Stats_BatteryOverDischargeCount",
+            data.historicalData.batteryOverDischargeCount)
+        .addField("Stats_BatteryFullChargeCount",
+            data.historicalData.batteryFullChargeCount)
+        .addField("Stats_TotalChargingBatteryAH",
+            data.historicalData.totalChargingBatteryAH)
+        .addField("Stats_CumulativePowerGenerationWH",
+            data.historicalData.cumulativePowerGenerationWH)
+        .addField("ChargingState", data.status.chargingState?.value)
+        .addField("Faults", faults)
+        .time(DateTime.now().toUtc());
+    await _writeService.write(point);
+  }
+
+  @override
+  Future<void> close() async {
+    _client.close();
+  }
+
+  @override
+  Future<void> deleteRecordsOlderThan(int days) async {
+    // TODO: implement deleteRecordsOlderThan
+    print('deleteRecordsOlderThan() not implemented yet');
+  }
+
+  @override
+  Future<void> init() async {
+    _client = InfluxDBClient(url: url,
+        token: token,
+        org: org,
+        bucket: bucket);
+    await _client.getPingApi().getPingWithHttpInfo();
+    _writeService = _client.getWriteService();
+  }
+
+  // Accepts the connection URL, e.g. `http://localhost:8086?org=my_org&bucket=my_bucket&token=xyz`.
+  static InfluxDbDataLogger parse(String url) {
+    final uri = Uri.parse(url);
+    final link = url.split("?").first;
+    final token = ArgumentError.checkNotNull(uri.queryParameters["token"], 'token');
+    final org = ArgumentError.checkNotNull(uri.queryParameters["org"], 'org');
+    final bucket = ArgumentError.checkNotNull(uri.queryParameters["bucket"], 'bucket');
+    return InfluxDbDataLogger(link, org, bucket, token);
+  }
+
+  @override
+  String toString() => 'InfluxDbDataLogger{url: $url, org: $org, bucket: $bucket, token: $token}';
 }

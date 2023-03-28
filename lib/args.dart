@@ -35,6 +35,9 @@ class Args {
   /// Print verbosely what I'm doing
   final bool verbose;
 
+  /// appends status to InfluxDB database, disables stdout status logging. Accepts the connection url, e.g. http://localhost:8086?org=my_org&bucket=my_bucket&token=xyz
+  final String? influx;
+
   Args(
       this.device,
       this.printStatusOnly,
@@ -44,9 +47,10 @@ class Args {
       this.statusFile,
       this.pollInterval,
       this.pruneLog,
-      this.verbose) {
-    if (pollInterval <= 0) throw ArgumentError.value(pollInterval, "pollInterval", "Must be 1 or greater");
-    if (pruneLog <= 0) throw ArgumentError.value(pruneLog, "pruneLog", "Must be 1 or greater");
+      this.verbose,
+      this.influx) {
+    RangeError.checkValueInInterval(pollInterval, 1, 1000, "pollInterval");
+    RangeError.checkValueInInterval(pruneLog, 1, 10000, "pruneLog");
   }
 
   /// If 'true' we'll feed the data from a dummy device. Useful for testing.
@@ -57,6 +61,7 @@ class Args {
     ..addFlag('utc', help: 'CSV: dump date in UTC instead of local, handy for Grafana', negatable: false)
     ..addOption('csv', help: 'appends status to a CSV file, disables stdout status logging')
     ..addOption('postgres', help: 'appends status to a postgresql database, disables stdout status logging. Accepts the connection url, e.g. postgresql://user:pass@localhost:5432/postgres')
+    ..addOption('influx', help: 'appends status to InfluxDB database, disables stdout status logging. Accepts the connection url, e.g. http://localhost:8086?org=my_org&bucket=my_bucket&token=xyz')
     ..addOption('statusfile', help: 'overwrites status to given file', defaultsTo: 'status.json')
     ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data', defaultsTo: '10')
     ..addOption('prunelog', help: 'prunes log entries older than x days', defaultsTo: '365')
@@ -99,7 +104,8 @@ class Args {
           _toFile(ar['statusfile'])!,
           pollInterval,
           pruneLog,
-          ar['verbose'] as bool
+          ar['verbose'] as bool,
+          ar['influx']
       );
 
       _configureLogger(a.verbose);
@@ -141,6 +147,9 @@ class Args {
       }
       if (postgres != null) {
         result.dataLoggers.add(PostgresDataLogger.parse(postgres!));
+      }
+      if (influx != null) {
+        result.dataLoggers.add(InfluxDbDataLogger.parse(influx!));
       }
       if (result.dataLoggers.isEmpty) {
         result.dataLoggers.add(StdoutDataLogger(utc));

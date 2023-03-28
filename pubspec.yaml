@@ -18,7 +18,8 @@ dependencies:
   cron: ^0.5.1
   csv: ^5.0.1
   hex: ^0.2.0
-  intl: ^0.18.0
+  influxdb_client: ^2.8.0
+  intl: ^0.17.0
   libserialport: ^0.3.0+1
   logging: ^1.1.1
   path: ^1.8.3
