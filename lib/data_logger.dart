@@ -352,7 +352,11 @@ class InfluxDbDataLogger implements DataLogger {
 
   @override
   Future<void> deleteRecordsOlderThan(int days) async {
-    await _deleteService.delete(start: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true), stop: DateTime.now().toUtc().subtract(Duration(days: days)));
+    await _deleteService.delete(
+        start: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+        stop: DateTime.now().toUtc().subtract(Duration(days: days)),
+        org: org,
+        bucket: bucket);
   }
 
   @override
