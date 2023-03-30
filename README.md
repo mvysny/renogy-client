@@ -49,7 +49,7 @@ Options:
 
 Read below on how to compile the project from sources.
 
-You'll need to install the libserialport first:
+You'll need to install the `libserialport` library first:
 
 ```
 $ sudo apt install libserialport0
@@ -222,7 +222,8 @@ Values for the `ChargingState` column:
 
 You can also log the data to the [InfluxDB](https://docs.influxdata.com/influxdb/v2.6/) time-series database -
 the OSS version is enough. We only support the 2.x version. See [Installing InfluxDB](https://docs.influxdata.com/influxdb/v2.6/install/)
-on how to install the database on your RPI. InfluxDB is capable of rendering the data, replacing Grafana.
+on how to install the database on your RPI. InfluxDB is capable of rendering the data as well,
+thus replacing both PostgreSQL and Grafana.
 
 To enable logging to InfluxDB, pass in the following command-line arg:
 
@@ -230,7 +231,7 @@ To enable logging to InfluxDB, pass in the following command-line arg:
 $ ./renogy_client.exe --influx 'http://localhost:8086?org=my_org&bucket=my_bucket&token=ngyXZ=='
 ```
 
-The token may be obtained in the InfluxDB admin interface, *Load Data / API Tokens*, you can either generate
+The token may be obtained in the InfluxDB admin interface: navigate to  *Load Data / API Tokens*. You can either generate
 a new one or duplicate existing admin token.
 
 After the data is populated, you can go ahead and create a Dashboard, then populate it with cells, each cell showing a different
