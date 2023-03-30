@@ -71,7 +71,7 @@ To connect to an actual device, pass in the device file name of tty connected to
 $ ./renogy-client.exe /dev/ttyUSB0 --status
 ```
 
-That will cause the app will only print status and quit. To continuously poll the device for data, run
+The `--status` flag will cause the app to connect to the device, print its status and quit. To continuously poll the device for data, run
 
 ```bash
 $ ./renogy-client.exe --csv log.csv /dev/ttyUSB0
@@ -270,9 +270,14 @@ Table of possible faults:
 
 # Compiling From Sources
 
-Run this on your Raspberry PI:
+You have to compile this project on your Raspberry PI, since Dart unfortunately doesn't support
+cross-compiling: you can't build an arm64 binary on your x86-64 laptop - see+vote for
+[Dart #28617](https://github.com/dart-lang/sdk/issues/28617).
+
+Therefore you'll have to install the Dart SDK on your RPI. Luckily it's quite easy. Run this on your Raspberry PI:
 
 1. [Install Dart](https://dart.dev/get-dart/archive), the ARMv8 (ARM64). Unfortunately it's not possible to use the apt-get method on ARMs.
+2. `git clone https://github.com/mvysny/renogy-client/` and `cd renogy-client`
 2. Resolve dependencies with `dart pub get`
 3. Build with `dart compile exe bin/renogy_client.dart`
 4. Find the binary at `bin/renogy_client.exe`
