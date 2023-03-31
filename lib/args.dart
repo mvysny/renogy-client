@@ -66,7 +66,7 @@ class Args {
     ..addOption('pollinterval', abbr: 'i', help: 'in seconds: how frequently to poll the controller for data', defaultsTo: '10')
     ..addOption('prunelog', help: 'prunes log entries older than x days', defaultsTo: '365')
     ..addFlag('list-serial-ports', help: 'lists all available serial ports and quits', negatable: false)
-    ..addFlag('verbose', abbr: 'V', help: 'Print verbosely what I\'m doing', negatable: false)
+    ..addFlag('verbose', abbr: 'v', help: 'Print verbosely what I\'m doing', negatable: false)
     ..addFlag('help', abbr: 'h', help: 'Print this usage information', negatable: false);
 
   /// Prints help and stops the program.
