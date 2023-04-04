@@ -68,4 +68,9 @@ class RetryOnTimeoutClient implements RenogyClient {
   SystemInfo getSystemInfo() {
     return _runAndMitigateTimeouts<SystemInfo>((io) => RenogyModbusClient(io, timeout).getSystemInfo());
   }
+
+  @override
+  String toString() {
+    return 'RetryOnTimeoutClient{timeout: $timeout, devName: $devName}';
+  }
 }
