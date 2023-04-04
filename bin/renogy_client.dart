@@ -6,41 +6,33 @@ import 'package:renogy_client/args.dart';
 import 'package:renogy_client/clients/dummy_renogy_client.dart';
 import 'package:renogy_client/clients/fix_daily_stats_client.dart';
 import 'package:renogy_client/clients/renogy_client.dart';
-import 'package:renogy_client/clients/renogy_modbus_client.dart';
+import 'package:renogy_client/clients/retry_on_timeout_client.dart';
 import 'package:renogy_client/data_logger.dart';
 import 'package:renogy_client/utils/closeable.dart';
-import 'package:renogy_client/utils/io.dart';
 import 'package:renogy_client/utils/utils.dart';
 
 void main(List<String> arguments) async {
   final args = Args.parse(arguments);
 
-  final SerialPortIO? io = args.isDummy ? null : SerialPortIO(args.device);
+  final cron = Cron();
   try {
-    io?.configure();
-    final cron = Cron();
+    final RenogyClient client = args.isDummy
+        ? DummyRenogyClient()
+        : FixDailyStatsClient(RetryOnTimeoutClient(const Duration(seconds: 1), args.device), cron);
     try {
-      final RenogyClient client = io == null
-          ? DummyRenogyClient()
-          : FixDailyStatsClient(RenogyModbusClient(io, Duration.zero), cron);
-      try {
-        if (args.printStatusOnly) {
-          final RenogyData allData = client.getAllData();
-          print(allData.toJsonString());
-        } else {
-          await _mainLoop(client, args, cron);
-        }
-      } finally {
-        client.closeQuietly();
-        _log.fine("Closed $client");
+      if (args.printStatusOnly) {
+        final RenogyData allData = client.getAllData();
+        print(allData.toJsonString());
+      } else {
+        await _mainLoop(client, args, cron);
       }
     } finally {
-      await cron.close();
-      _log.fine("Closed internal cron");
+      client.closeQuietly();
+      _log.fine("Closed $client");
     }
   } finally {
-    io?.closeQuietly();
-    _log.fine("Closed $io");
+    await cron.close();
+    _log.fine("Closed internal cron");
   }
 }
 
