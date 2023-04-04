@@ -56,6 +56,27 @@ extension FullyIO on IO {
     }
     return result;
   }
+
+  /// Drains the pipe so that there are no stray bytes left. Blocks up until [timeout].
+  void drain([Duration timeout = const Duration(seconds : 1)]) {
+    try {
+      while(true) {
+        readFully(128, timeout: timeout);
+      }
+    } on TimeoutException {
+      // okay
+    }
+  }
+
+  void drainQuietly([Duration timeout = const Duration(seconds : 1)]) {
+    final log = Logger((SerialPortIO).toString());
+    log.fine("Draining $this");
+    try {
+      drain(timeout);
+    } catch (e, s) {
+      log.warning("Failed to drain $this", e, s);
+    }
+  }
 }
 
 /// Wraps [SerialPort] as [IO].

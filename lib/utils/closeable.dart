@@ -1,8 +1,8 @@
 import 'package:logging/logging.dart';
 
-/// A resource that can be closed.
+/// A resource that can be closed synchronously.
 abstract class Closeable {
-  /// Closes this resource. May throw an exception if the close fails.
+  /// Closes this resource. May throw an exception if the close fails. Blocks until the resource is closed.
   void close();
 }
 
