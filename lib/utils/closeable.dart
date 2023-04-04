@@ -7,7 +7,7 @@ abstract class Closeable {
 }
 
 extension CloseQuietly on Closeable {
-  /// Closes this resource. Does not throw an exception.
+  /// Closes this resource. Does not throw an exception. Blocks until the resource is closed.
   void closeQuietly() {
     try {
       close();
