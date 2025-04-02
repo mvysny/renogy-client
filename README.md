@@ -1,5 +1,7 @@
 # Renogy Client
 
+**DEPRECATED**, no longer maintained. Superseded by the [Renogy Klient](https://github.com/mvysny/renogy-klient).
+
 [Dart](https://dart.dev/) app which communicate with Renogy Rover 40A over a RS232 serial port, using the Rover Modbus protocol.
 
 Licensed under the MIT license.
